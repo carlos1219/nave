@@ -1,0 +1,105 @@
+name: release
+
+# Publica las imágenes en GHCR, genera su SBOM CycloneDX y las firma sin clave (cosign +
+# OIDC de GitHub). El digest firmado es el que se copia a deploy/images.env (ADR 0022).
+# Solo desde etiquetas `v*` (protégelas con un ruleset): firmar es dar fe del origen.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    strategy:
+      fail-fast: true
+      matrix:
+        image: [backend, frontend, runner, fetcher, semgrep, trivy, egress-proxy]
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Digests de las bases
+        run: |
+          test -f deploy/images.lock.env || { echo "::error::falta deploy/images.lock.env"; exit 1; }
+          if grep -E -v '^(#|$)' deploy/images.lock.env | grep -E -v '^NAVE_[A-Z_]+=[a-z0-9./:_-]+@sha256:[0-9a-f]{64}$'; then
+            echo "::error::images.lock.env con formato no válido"; exit 1
+          fi
+          grep -E -v '^(#|$)' deploy/images.lock.env >> "$GITHUB_ENV"
+          grep -E -v '^(#|$)' deploy/scanner-versions.env >> "$GITHUB_ENV"
+          grep -E -v '^(#|$)' deploy/build-versions.env >> "$GITHUB_ENV"
+      - name: Contexto y argumentos
+        id: spec
+        env:
+          NAME: ${{ matrix.image }}
+        run: |
+          owner=$(printf %s "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
+          echo "ref=ghcr.io/${owner}/nave-${NAME}" >> "$GITHUB_OUTPUT"
+          file=""
+          case "$NAME" in
+            backend)  context=backend;  args="PYTHON_IMAGE=$NAVE_PYTHON_IMAGE" ;;
+            frontend) context=.; file=deploy/nginx/Dockerfile; args="NODE_IMAGE=$NAVE_NODE_IMAGE"$'\n'"NGINX_IMAGE=$NAVE_NGINX_IMAGE" ;;
+            runner)   context=runner;   args="PYTHON_IMAGE=$NAVE_PYTHON_IMAGE"$'\n'"DOCKER_CLI_IMAGE=$NAVE_DOCKER_CLI_IMAGE" ;;
+            fetcher)  context=deploy/scanner-sandbox/fetcher; args="PYTHON_IMAGE=$NAVE_PYTHON_ALPINE_IMAGE" ;;
+            semgrep)  context=deploy/scanner-sandbox/semgrep; args="PYTHON_IMAGE=$NAVE_PYTHON_IMAGE"$'\n'"SEMGREP_VERSION=$NAVE_SEMGREP_VERSION" ;;
+            trivy)    context=deploy/scanner-sandbox/trivy; args="TRIVY_IMAGE=$NAVE_TRIVY_BASE_IMAGE" ;;
+            egress-proxy) context=deploy/egress-proxy; args="GO_IMAGE=$NAVE_GO_IMAGE"$'\n'"SMOKESCREEN_VERSION=$NAVE_SMOKESCREEN_VERSION" ;;
+            *) echo "imagen desconocida"; exit 1 ;;
+          esac
+          echo "context=$context" >> "$GITHUB_OUTPUT"
+          echo "file=$file" >> "$GITHUB_OUTPUT"
+          {
+            echo "args<<EOF_ARGS"
+            echo "$args"
+            echo "EOF_ARGS"
+          } >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Construir y publicar
+        id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: ${{ steps.spec.outputs.context }}
+          file: ${{ steps.spec.outputs.file }}
+          build-args: ${{ steps.spec.outputs.args }}
+          push: true
+          tags: ${{ steps.spec.outputs.ref }}:${{ github.ref_name }}
+          provenance: mode=max
+      - uses: sigstore/cosign-installer@398d4b0eeef1380460a10c8013a76f728fb906ac # v3
+      - name: SBOM CycloneDX
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0
+        with:
+          image: ${{ steps.spec.outputs.ref }}@${{ steps.build.outputs.digest }}
+          format: cyclonedx-json
+          output-file: sbom-${{ matrix.image }}.cdx.json
+          upload-artifact: false
+      - name: Firmar la imagen y adjuntar el SBOM
+        env:
+          IMAGE: ${{ steps.spec.outputs.ref }}@${{ steps.build.outputs.digest }}
+          NAME: ${{ matrix.image }}
+        run: |
+          cosign sign --yes "$IMAGE"
+          cosign attest --yes --type cyclonedx --predicate "sbom-${NAME}.cdx.json" "$IMAGE"
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        with:
+          name: sbom-${{ matrix.image }}
+          path: sbom-${{ matrix.image }}.cdx.json
+          if-no-files-found: error
+      - name: Resumen (para deploy/images.env)
+        env:
+          LINE: ${{ steps.spec.outputs.ref }}@${{ steps.build.outputs.digest }}
+          NAME: ${{ matrix.image }}
+        run: |
+          upper=$(printf %s "$NAME" | tr '[:lower:]-' '[:upper:]_')
+          echo "NAVE_${upper}_IMAGE=${LINE}" >> "$GITHUB_STEP_SUMMARY"

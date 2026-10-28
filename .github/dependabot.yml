@@ -1,0 +1,38 @@
+# Actualización automatizada de dependencias (CLAUDE.md §15). Cada cambio llega como PR y pasa
+# por el CI completo (tests, auditoría, auto-escaneo). Las versiones se mantienen EXACTAS: las
+# PR de Dependabot cambian el número, no relajan el rango.
+#
+# Lo que Dependabot no cubre y se mantiene a mano (docs/architecture/despliegue.md §8):
+#  - los digests de las imágenes base (`python deploy/scripts/pin_images.py`, revisar el diff);
+#  - los `requirements*.lock` con hashes (`uv pip compile --generate-hashes`);
+#  - la versión de Smokescreen (`deploy/build-versions.env`) y de los escáneres
+#    (`deploy/scanner-versions.env`), que deben coincidir con el runner.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: {interval: weekly, day: monday}
+    commit-message: {prefix: "chore(ci)"}
+    open-pull-requests-limit: 5
+    groups:
+      actions: {patterns: ["*"]}
+
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule: {interval: weekly, day: monday}
+    commit-message: {prefix: "chore(deps)"}
+    open-pull-requests-limit: 5
+    versioning-strategy: increase
+    groups:
+      frontend: {patterns: ["*"], update-types: [minor, patch]}
+
+  - package-ecosystem: pip
+    directory: /backend
+    schedule: {interval: weekly, day: monday}
+    commit-message: {prefix: "chore(deps)"}
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: docker
+    directory: /deploy/egress-proxy
+    schedule: {interval: weekly, day: monday}
+    commit-message: {prefix: "chore(deps)"}

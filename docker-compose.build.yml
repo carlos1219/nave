@@ -1,0 +1,38 @@
+# Construcción local para desarrollo (junto a docker-compose.yml y deploy/images.dev.env).
+# Las imágenes se etiquetan nave-*:dev; no sustituye al flujo firmado de producción (ADR 0022).
+services:
+  api:
+    build:
+      context: backend
+      args: {PYTHON_IMAGE: "${NAVE_PYTHON_IMAGE:?}"}
+  frontend:
+    build:
+      context: .
+      dockerfile: deploy/nginx/Dockerfile
+      args: {NODE_IMAGE: "${NAVE_NODE_IMAGE:?}", NGINX_IMAGE: "${NAVE_NGINX_IMAGE:?}"}
+  scan-runner:
+    build:
+      context: runner
+      args: {PYTHON_IMAGE: "${NAVE_PYTHON_IMAGE:?}", DOCKER_CLI_IMAGE: "${NAVE_DOCKER_CLI_IMAGE:?}"}
+  fetcher-build:
+    profiles: [build-only]
+    image: ${NAVE_FETCHER_IMAGE:?}
+    build:
+      context: deploy/scanner-sandbox/fetcher
+      args: {PYTHON_IMAGE: "${NAVE_PYTHON_ALPINE_IMAGE:?}"}
+  semgrep-build:
+    profiles: [build-only]
+    image: ${NAVE_SEMGREP_IMAGE:?}
+    build:
+      context: deploy/scanner-sandbox/semgrep
+      args: {PYTHON_IMAGE: "${NAVE_PYTHON_IMAGE:?}", SEMGREP_VERSION: "${NAVE_SEMGREP_VERSION:?}"}
+  trivy-build:
+    profiles: [build-only]
+    image: ${NAVE_TRIVY_IMAGE:?}
+    build:
+      context: deploy/scanner-sandbox/trivy
+      args: {TRIVY_IMAGE: "${NAVE_TRIVY_BASE_IMAGE:?}"}
+  egress-proxy:
+    build:
+      context: deploy/egress-proxy
+      args: {GO_IMAGE: "${NAVE_GO_IMAGE:?}", SMOKESCREEN_VERSION: "${NAVE_SMOKESCREEN_VERSION:?}"}

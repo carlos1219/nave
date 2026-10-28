@@ -1,0 +1,104 @@
+# Fase 7 — Informe ejecutivo de la revisión de seguridad
+
+Fecha: 2026-10-28. Detalle técnico, pruebas y evidencias en
+[`fase7-revision.md`](fase7-revision.md); riesgos residuales en
+[`../threat-model.md`](../threat-model.md) (RR-01 a RR-33).
+
+## Conclusión
+
+**NAVE no está lista para producción todavía, pero no por un problema de diseño.** La
+arquitectura (escaneos en contenedores efímeros sin red, salida a Internet solo hacia
+GitHub, autorización en cada caso de uso, auditoría inmutable, secretos solo en ficheros)
+ha resistido la revisión. Lo que faltaba era que varias piezas funcionaran de verdad de
+extremo a extremo: antes de esta fase **ningún escaneo podía terminar** y parte de la
+cadena de suministro no existía. Eso está corregido y probado.
+
+Quedan cuatro condiciones para el paso a producción (ver «Antes de producción»), ninguna
+de las cuales exige cambiar el diseño.
+
+## Qué se revisó
+
+Revisión como atacante, por límite de confianza, de los diez componentes acordados:
+sandbox y fetcher, `scan-runner`, proxy de salida, webhook de GitHub, autenticación y
+sesiones, autorización y multi-tenancy, persistencia (PostgreSQL, Redis, Celery),
+frontend, despliegue y cadena de suministro, y secretos y logs. `domain` y `application`
+se revisaron por muestreo. Después, una revisión delta de las funciones añadidas con el
+rediseño de la interfaz (ADR 0027 a 0030). Cada hallazgo se reprodujo contra la pila real en ejecución
+siempre que fue posible, y cada corrección lleva un test de regresión.
+
+## Resultados
+
+31 hallazgos (F7-01 a F7-31):
+
+| Severidad | Nº | Corregidos | Parciales | Aceptados con justificación |
+|---|---|---|---|---|
+| Bloqueante | 1 | 1 | — | — |
+| Alto | 5 | 5 | — | — |
+| Medio | 11 | 8 | 2 | 1 |
+| Bajo | 14 | 4 | 1 | 9 |
+| **Total** | **31** | **18** | **3** | **10** |
+
+«Parciales»: F7-04 (falta el contrato de aislamiento de Trivy en CI), F7-13 (documentado;
+pendiente de comprobar en producción) y F7-18 (Redis endurecido, pero un solo usuario para
+todos los servicios).
+
+### Los hallazgos que importan
+
+| ID | Qué pasaba | Impacto |
+|---|---|---|
+| F7-05 (Bloqueante) | El código clonado nunca llegaba al contenedor de escaneo | Ningún escaneo podía completarse. Fallaba cerrado (sin falsos «aprobado») |
+| F7-01 (Alto) | Un fichero de configuración vacío hacía abortar a Trivy | Sin análisis de dependencias, secretos ni IaC |
+| F7-02 (Alto) | Semgrep omitía en silencio los ficheros de más de 2 MB | Quien controla un repositorio podía esconder código vulnerable al quality gate rellenando el fichero |
+| F7-15 (Alto) | Con un escaneo activo en una rama, cualquier escaneo nuevo de esa rama fallaba | Commits sin escanear y errores 404 a usuarios autorizados |
+| F7-24 (Alto) | La imagen de producción del proxy de salida no existía ni se publicaba | El control de salida a Internet no podía desplegarse |
+| F7-31 (Alto) | Un administrador de plataforma podía darse ADMIN en cualquier organización | El rol pensado solo para administrar la instalación daba acceso a todos los hallazgos y auditorías |
+| F7-14 (Medio) | Dos administradores podían retirarse mutuamente a la vez | Organización sin administrador en 4 de 5 intentos medidos |
+| F7-22, F7-25, F7-27 (Medio) | Lockfile del frontend sin hashes en 264 de 301 paquetes, CI que no construía nada con digests fijos, dependencias con CVE críticos | Cadena de suministro no verificable |
+| F7-29 (Medio) | El log de acceso de la API aceptaba saltos de línea de la URL | Forja de líneas de log y secretos sin redactar |
+
+**Patrón común:** casi todos los fallos graves estaban en piezas que parecían terminadas
+porque sus tests unitarios pasaban, pero que nunca se habían ejecutado juntas contra los
+binarios y servicios reales. La lección para el equipo es mantener las pruebas de extremo
+a extremo y el pipeline de imágenes como parte obligatoria de CI.
+
+## Riesgos que se aceptan
+
+Ninguno es alto. Los más relevantes:
+
+- **Exfiltración por `github.com`** (RR-25): el proxy filtra por dominio, no por uso.
+  Quien comprometa la API o el worker podría subir datos a un repositorio propio. Mitigado
+  por ser el único canal de salida y por tokens de solo lectura de un repositorio.
+- **Un solo usuario de Redis** (RR-31): un componente comprometido controla las colas.
+  Mejora propuesta: un usuario por servicio.
+- **IP real del cliente** (RR-29, abierto): el límite de intentos de login exige que Nginx
+  vea la IP real; hay que comprobarlo en el entorno de producción.
+- **Administrador de plataforma** (RR-34): puede dar roles a otras cuentas en cualquier
+  organización (no a sí mismo). Es la función pedida y queda auditada.
+- **Tráfico interno sin TLS** (RR-32) y **paquetes base con CVE hasta refrescar
+  digests** (RR-33): aceptables mientras todo corra en un único host.
+
+## Antes de producción
+
+1. **Escaneo real con una GitHub App** de extremo a extremo (webhook → escaneo → Checks,
+   SARIF y comentario en el PR). Es la única ruta crítica que no se ha podido probar con
+   GitHub real.
+2. **Despliegue en el host de producción con motor rootless y gVisor** (RR-20): en
+   desarrollo (Docker Desktop) el aislamiento de escaneos no es un límite de seguridad.
+3. **Primera ejecución real de CI y del workflow de publicación**: firma con cosign, SBOM,
+   autoescaneo y construcción de las siete imágenes solo se han reproducido en local.
+   Revisar también los errores de tipado de los tests (`mypy` sobre `tests`) observados en
+   el entorno local.
+4. **Comprobar la IP real del cliente** tras Nginx (RR-29) y programar la actualización de
+   la base de datos de Trivy (RR-15).
+
+## Estado de la verificación
+
+Suites en verde al cerrar cada componente: backend 1959 tests tras la revisión delta
+(unitarios, seguridad y e2e; más los de integración con PostgreSQL real), runner 278, despliegue 75 y frontend 238
+antes del rediseño de la interfaz. Autoescaneo de la propia plataforma (Semgrep y Trivy)
+con 0 hallazgos; 10 de 10 acciones de CI fijadas por SHA verificadas contra GitHub; las 7
+imágenes propias construidas con digests fijos, sin vulnerabilidades corregibles salvo las
+de RR-33. Revisión delta: 27 comprobaciones en vivo sobre las rutas nuevas, todas
+conformes tras corregir F7-31.
+
+No verificado: lo enumerado en «Antes de producción».

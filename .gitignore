@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.hypothesis/
+.import_linter_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+frontend/dist/
+*.tsbuildinfo
+
+# Entorno y secretos (nunca en el repo, §12)
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*.key
+
+# Editores y SO
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Artefactos locales de herramientas de prueba en navegador
+.playwright-mcp/
+
+# Digests y certificados de cada entorno (ADR 0022)
+deploy/images.env
+deploy/tls/
+deploy/dev-logs.txt

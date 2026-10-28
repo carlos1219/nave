@@ -1,0 +1,89 @@
+[build-system]
+requires = ["setuptools==84.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nave-backend"
+version = "0.1.0"
+description = "NAVE — Nodo de Análisis y Verificación Estática (backend)"
+requires-python = ">=3.12,<3.13"
+# domain y application solo usan stdlib; estas son de infraestructura (README: justificación).
+dependencies = [
+    "alembic==1.20.0",
+    "celery==5.6.3",
+    "cryptography==50.0.1",
+    "flask==3.1.3",
+    "gunicorn==26.2.0",
+    "joserfc==1.7.5",
+    "pydantic==2.13.5",
+    "psycopg[binary]==3.3.6",
+    "redis==8.1.0",
+    "sqlalchemy==2.1.1",
+]
+
+[project.optional-dependencies]
+# Versiones exactas; el lockfile con hashes es requirements-dev.lock.
+dev = [
+    "hypothesis==6.168.2",
+    "import-linter==2.15",
+    "mypy==2.3.1",
+    "pytest==9.1.1",
+    "pytest-cov==7.1.0",
+    "ruff==0.16.9",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F", "I", "N", "UP", "B", "A", "C4", "S", "BLE", "T20", "SIM",
+    "RET", "PT", "PIE", "PL", "RUF", "ERA", "TRY", "DTZ", "PERF", "FBT",
+]
+ignore = [
+    "TRY003",  # mensajes de error construidos en el propio tipo de excepción
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106", "PLR2004", "FBT", "PLR0915"]
+# En integración el error de una restricción salta al hacer commit: el bloque
+# pytest.raises tiene que abarcar la transacción completa.
+"tests/integration/**" = ["PT012"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool", "possibly-undefined"]
+mypy_path = "src"
+packages = ["nave"]
+
+# Celery, kombu y billiard no publican tipos. Se limita la excepción a ellos y el código
+# propio que los toca (infrastructure/queue, delivery/tasks) queda tipado por fuera.
+[[tool.mypy.overrides]]
+module = ["celery", "celery.*", "kombu", "kombu.*", "billiard", "billiard.*", "gunicorn", "gunicorn.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# El runner se importa solo en tests (test cruzado worker ↔ runner); no es dependencia de `nave`.
+pythonpath = [".", "../runner/src"]
+addopts = ["-ra", "--strict-markers", "--strict-config", "--import-mode=importlib"]
+xfail_strict = true
+markers = ["integration: requiere PostgreSQL real (NAVE_TEST_DATABASE_URL)"]
+filterwarnings = ["error"]
+
+[tool.coverage.run]
+branch = true
+source = ["nave"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+skip_covered = true
+exclude_also = ["if TYPE_CHECKING:"]

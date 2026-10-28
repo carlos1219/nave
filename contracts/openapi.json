@@ -1,0 +1,6503 @@
+{
+  "components": {
+    "schemas": {
+      "AuditEntryOut": {
+        "properties": {
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "actor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "actor_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Name"
+          },
+          "details": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Details",
+            "type": "object"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "target_id": {
+            "title": "Target Id",
+            "type": "string"
+          },
+          "target_type": {
+            "title": "Target Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "occurred_at",
+          "action",
+          "actor",
+          "actor_name",
+          "target_type",
+          "target_id",
+          "details"
+        ],
+        "title": "AuditEntryOut",
+        "type": "object"
+      },
+      "AuditPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AuditEntryOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "title": "AuditPage",
+        "type": "object"
+      },
+      "CancelScanOut": {
+        "properties": {
+          "cancelled": {
+            "title": "Cancelled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "cancelled"
+        ],
+        "title": "CancelScanOut",
+        "type": "object"
+      },
+      "ComponentHealthOut": {
+        "properties": {
+          "checked_at": {
+            "format": "date-time",
+            "title": "Checked At",
+            "type": "string"
+          },
+          "component": {
+            "title": "Component",
+            "type": "string"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "latency_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latency Ms"
+          },
+          "status": {
+            "enum": [
+              "OK",
+              "DEGRADED",
+              "DOWN"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "component",
+          "status",
+          "detail",
+          "latency_ms",
+          "checked_at"
+        ],
+        "title": "ComponentHealthOut",
+        "type": "object"
+      },
+      "DecisionOut": {
+        "properties": {
+          "decided_at": {
+            "format": "date-time",
+            "title": "Decided At",
+            "type": "string"
+          },
+          "decided_by": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "justification": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Justification"
+          },
+          "state": {
+            "$ref": "#/components/schemas/TriageState"
+          }
+        },
+        "required": [
+          "id",
+          "state",
+          "decided_by",
+          "decided_at",
+          "justification",
+          "expires_at"
+        ],
+        "title": "DecisionOut",
+        "type": "object"
+      },
+      "DeliveryOut": {
+        "properties": {
+          "delivery_id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "event": {
+            "title": "Event",
+            "type": "string"
+          },
+          "outcome": {
+            "title": "Outcome",
+            "type": "string"
+          },
+          "received_at": {
+            "format": "date-time",
+            "title": "Received At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "delivery_id",
+          "event",
+          "outcome",
+          "received_at"
+        ],
+        "title": "DeliveryOut",
+        "type": "object"
+      },
+      "FailedScanList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FailedScanOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "FailedScanList",
+        "type": "object"
+      },
+      "FailedScanOut": {
+        "properties": {
+          "recovered": {
+            "description": "Un escaneo posterior del mismo repositorio y rama terminó COMPLETED.",
+            "title": "Recovered",
+            "type": "boolean"
+          },
+          "repository": {
+            "$ref": "#/components/schemas/RepositoryRefOut"
+          },
+          "scan": {
+            "$ref": "#/components/schemas/ScanOut"
+          }
+        },
+        "required": [
+          "scan",
+          "repository",
+          "recovered"
+        ],
+        "title": "FailedScanOut",
+        "type": "object"
+      },
+      "FindingDetailOut": {
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "cve": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Cve",
+            "type": "array"
+          },
+          "cwe": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Cwe",
+            "type": "array"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/DecisionOut"
+            },
+            "title": "Decisions",
+            "type": "array"
+          },
+          "first_seen_at": {
+            "format": "date-time",
+            "title": "First Seen At",
+            "type": "string"
+          },
+          "first_seen_scan_id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "last_seen_at": {
+            "format": "date-time",
+            "title": "Last Seen At",
+            "type": "string"
+          },
+          "last_seen_scan_id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "occurrence": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OccurrenceOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "repository_id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "rule_id": {
+            "title": "Rule Id",
+            "type": "string"
+          },
+          "scanner": {
+            "title": "Scanner",
+            "type": "string"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/Severity"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "triage_expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Triage Expires At"
+          },
+          "triage_state": {
+            "$ref": "#/components/schemas/TriageState"
+          }
+        },
+        "required": [
+          "id",
+          "repository_id",
+          "scanner",
+          "category",
+          "rule_id",
+          "severity",
+          "title",
+          "cwe",
+          "cve",
+          "triage_state",
+          "triage_expires_at",
+          "first_seen_scan_id",
+          "last_seen_scan_id",
+          "first_seen_at",
+          "last_seen_at",
+          "occurrence",
+          "decisions"
+        ],
+        "title": "FindingDetailOut",
+        "type": "object"
+      },
+      "FindingOut": {
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "cve": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Cve",
+            "type": "array"
+          },
+          "cwe": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Cwe",
+            "type": "array"
+          },
+          "first_seen_at": {
+            "format": "date-time",
+            "title": "First Seen At",
+            "type": "string"
+          },
+          "first_seen_scan_id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "last_seen_at": {
+            "format": "date-time",
+            "title": "Last Seen At",
+            "type": "string"
+          },
+          "last_seen_scan_id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "occurrence": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OccurrenceOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "repository_id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "rule_id": {
+            "title": "Rule Id",
+            "type": "string"
+          },
+          "scanner": {
+            "title": "Scanner",
+            "type": "string"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/Severity"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "triage_expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Triage Expires At"
+          },
+          "triage_state": {
+            "$ref": "#/components/schemas/TriageState"
+          }
+        },
+        "required": [
+          "id",
+          "repository_id",
+          "scanner",
+          "category",
+          "rule_id",
+          "severity",
+          "title",
+          "cwe",
+          "cve",
+          "triage_state",
+          "triage_expires_at",
+          "first_seen_scan_id",
+          "last_seen_scan_id",
+          "first_seen_at",
+          "last_seen_at",
+          "occurrence"
+        ],
+        "title": "FindingOut",
+        "type": "object"
+      },
+      "FindingPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FindingOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "title": "FindingPage",
+        "type": "object"
+      },
+      "FindingRowList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FindingRowOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "FindingRowList",
+        "type": "object"
+      },
+      "FindingRowOut": {
+        "properties": {
+          "finding": {
+            "$ref": "#/components/schemas/FindingOut"
+          },
+          "justification": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Justification"
+          },
+          "repository": {
+            "$ref": "#/components/schemas/RepositoryRefOut"
+          }
+        },
+        "required": [
+          "finding",
+          "repository",
+          "justification"
+        ],
+        "title": "FindingRowOut",
+        "type": "object"
+      },
+      "FindingRowPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FindingRowOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "title": "FindingRowPage",
+        "type": "object"
+      },
+      "FixTimeOut": {
+        "properties": {
+          "fixed": {
+            "title": "Fixed",
+            "type": "integer"
+          },
+          "mean_days": {
+            "description": "Días medios entre la primera y la última detección.",
+            "title": "Mean Days",
+            "type": "number"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/Severity"
+          }
+        },
+        "required": [
+          "severity",
+          "fixed",
+          "mean_days"
+        ],
+        "title": "FixTimeOut",
+        "type": "object"
+      },
+      "HealthOut": {
+        "properties": {
+          "components": {
+            "items": {
+              "$ref": "#/components/schemas/ComponentHealthOut"
+            },
+            "title": "Components",
+            "type": "array"
+          },
+          "heartbeat_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Heartbeat At"
+          },
+          "stale": {
+            "description": "Sin latido del worker en los últimos 3 minutos.",
+            "title": "Stale",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "components",
+          "heartbeat_at",
+          "stale"
+        ],
+        "title": "HealthOut",
+        "type": "object"
+      },
+      "LocationOut": {
+        "properties": {
+          "end_line": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Line"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          },
+          "start_line": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Line"
+          }
+        },
+        "required": [
+          "path",
+          "start_line",
+          "end_line"
+        ],
+        "title": "LocationOut",
+        "type": "object"
+      },
+      "MeOut": {
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "platform_admin": {
+            "description": "Solo para mostrar la sección de plataforma; la autorización es del servidor.",
+            "title": "Platform Admin",
+            "type": "boolean"
+          },
+          "user_id": {
+            "$ref": "#/components/schemas/Uuid"
+          }
+        },
+        "required": [
+          "user_id",
+          "display_name",
+          "platform_admin"
+        ],
+        "title": "MeOut",
+        "type": "object"
+      },
+      "MemberList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MemberOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "MemberList",
+        "type": "object"
+      },
+      "MemberOut": {
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          },
+          "user_id": {
+            "$ref": "#/components/schemas/Uuid"
+          }
+        },
+        "required": [
+          "user_id",
+          "display_name",
+          "email",
+          "role"
+        ],
+        "title": "MemberOut",
+        "type": "object"
+      },
+      "MemberRoleRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          }
+        },
+        "required": [
+          "role"
+        ],
+        "title": "MemberRoleRequest",
+        "type": "object"
+      },
+      "OccurrenceOut": {
+        "properties": {
+          "is_new": {
+            "title": "Is New",
+            "type": "boolean"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LocationOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "scan_id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "snippet": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snippet"
+          }
+        },
+        "required": [
+          "scan_id",
+          "location",
+          "message",
+          "snippet",
+          "is_new"
+        ],
+        "title": "OccurrenceOut",
+        "type": "object"
+      },
+      "OrganizationList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OrganizationOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "OrganizationList",
+        "type": "object"
+      },
+      "OrganizationOut": {
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "login": {
+            "title": "Login",
+            "type": "string"
+          },
+          "open_findings": {
+            "$ref": "#/components/schemas/SeverityCountsOut",
+            "description": "Findings con triage OPEN por severidad, sumando todos sus repositorios."
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          },
+          "status": {
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "login",
+          "status",
+          "role",
+          "open_findings"
+        ],
+        "title": "OrganizationOut",
+        "type": "object"
+      },
+      "OrganizationStatsOut": {
+        "properties": {
+          "by_repository": {
+            "items": {
+              "$ref": "#/components/schemas/RepositoryCountsOut"
+            },
+            "title": "By Repository",
+            "type": "array"
+          },
+          "by_scanner": {
+            "items": {
+              "$ref": "#/components/schemas/ScannerCountsOut"
+            },
+            "title": "By Scanner",
+            "type": "array"
+          },
+          "fix_times": {
+            "items": {
+              "$ref": "#/components/schemas/FixTimeOut"
+            },
+            "title": "Fix Times",
+            "type": "array"
+          },
+          "open": {
+            "$ref": "#/components/schemas/SeverityCountsOut"
+          },
+          "sla": {
+            "items": {
+              "$ref": "#/components/schemas/SlaStatusOut"
+            },
+            "title": "Sla",
+            "type": "array"
+          },
+          "top_rules": {
+            "items": {
+              "$ref": "#/components/schemas/RuleStatOut"
+            },
+            "title": "Top Rules",
+            "type": "array"
+          },
+          "trend": {
+            "items": {
+              "$ref": "#/components/schemas/TrendPointOut"
+            },
+            "title": "Trend",
+            "type": "array"
+          }
+        },
+        "required": [
+          "open",
+          "by_scanner",
+          "by_repository",
+          "top_rules",
+          "fix_times",
+          "sla",
+          "trend"
+        ],
+        "title": "OrganizationStatsOut",
+        "type": "object"
+      },
+      "OutcomeCountOut": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "outcome": {
+            "title": "Outcome",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome",
+          "count"
+        ],
+        "title": "OutcomeCountOut",
+        "type": "object"
+      },
+      "PlatformMembershipOut": {
+        "properties": {
+          "login": {
+            "title": "Login",
+            "type": "string"
+          },
+          "organization_id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          }
+        },
+        "required": [
+          "organization_id",
+          "login",
+          "role"
+        ],
+        "title": "PlatformMembershipOut",
+        "type": "object"
+      },
+      "PlatformOrganizationList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PlatformOrganizationOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PlatformOrganizationList",
+        "type": "object"
+      },
+      "PlatformOrganizationOut": {
+        "properties": {
+          "admins": {
+            "title": "Admins",
+            "type": "integer"
+          },
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "login": {
+            "title": "Login",
+            "type": "string"
+          },
+          "members": {
+            "title": "Members",
+            "type": "integer"
+          },
+          "status": {
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "login",
+          "status",
+          "members",
+          "admins"
+        ],
+        "title": "PlatformOrganizationOut",
+        "type": "object"
+      },
+      "PlatformUserList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PlatformUserOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PlatformUserList",
+        "type": "object"
+      },
+      "PlatformUserOut": {
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "last_login_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Login At"
+          },
+          "live_sessions": {
+            "title": "Live Sessions",
+            "type": "integer"
+          },
+          "memberships": {
+            "items": {
+              "$ref": "#/components/schemas/PlatformMembershipOut"
+            },
+            "title": "Memberships",
+            "type": "array"
+          },
+          "platform_admin": {
+            "title": "Platform Admin",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "display_name",
+          "email",
+          "last_login_at",
+          "live_sessions",
+          "platform_admin",
+          "memberships"
+        ],
+        "title": "PlatformUserOut",
+        "type": "object"
+      },
+      "PolicyGateIn": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "pattern": "^[a-z0-9][a-z0-9-]{0,62}$",
+            "title": "Id",
+            "type": "string"
+          },
+          "max": {
+            "items": {
+              "$ref": "#/components/schemas/SeverityLimitIn"
+            },
+            "maxItems": 5,
+            "minItems": 1,
+            "title": "Max",
+            "type": "array"
+          },
+          "scope": {
+            "enum": [
+              "NEW_FINDINGS",
+              "ALL_OPEN"
+            ],
+            "title": "Scope",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "scope",
+          "max"
+        ],
+        "title": "PolicyGateIn",
+        "type": "object"
+      },
+      "PolicyGateOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "max": {
+            "items": {
+              "$ref": "#/components/schemas/SeverityLimitOut"
+            },
+            "title": "Max",
+            "type": "array"
+          },
+          "scope": {
+            "enum": [
+              "NEW_FINDINGS",
+              "ALL_OPEN"
+            ],
+            "title": "Scope",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "scope",
+          "max"
+        ],
+        "title": "PolicyGateOut",
+        "type": "object"
+      },
+      "PolicyHistoryOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyVersionOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PolicyHistoryOut",
+        "type": "object"
+      },
+      "PolicyPublishedOut": {
+        "properties": {
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version"
+        ],
+        "title": "PolicyPublishedOut",
+        "type": "object"
+      },
+      "PolicyRequest": {
+        "additionalProperties": false,
+        "description": "Política completa: se publica como versión nueva y la anterior queda inactiva.",
+        "properties": {
+          "fail_on_sla_breach": {
+            "title": "Fail On Sla Breach",
+            "type": "boolean"
+          },
+          "gates": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyGateIn"
+            },
+            "maxItems": 32,
+            "title": "Gates",
+            "type": "array"
+          },
+          "sla_days": {
+            "items": {
+              "$ref": "#/components/schemas/SeverityLimitIn"
+            },
+            "maxItems": 5,
+            "title": "Sla Days",
+            "type": "array"
+          }
+        },
+        "required": [
+          "gates",
+          "sla_days",
+          "fail_on_sla_breach"
+        ],
+        "title": "PolicyRequest",
+        "type": "object"
+      },
+      "PolicyVersionOut": {
+        "properties": {
+          "active": {
+            "title": "Active",
+            "type": "boolean"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "fail_on_sla_breach": {
+            "title": "Fail On Sla Breach",
+            "type": "boolean"
+          },
+          "gates": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyGateOut"
+            },
+            "title": "Gates",
+            "type": "array"
+          },
+          "sla_days": {
+            "items": {
+              "$ref": "#/components/schemas/SeverityLimitOut"
+            },
+            "title": "Sla Days",
+            "type": "array"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version",
+          "active",
+          "created_at",
+          "gates",
+          "sla_days",
+          "fail_on_sla_breach"
+        ],
+        "title": "PolicyVersionOut",
+        "type": "object"
+      },
+      "Problem": {
+        "description": "RFC 7807. Nunca incluye texto de la excepción ni eco de la entrada.",
+        "properties": {
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          },
+          "status": {
+            "title": "Status",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "request_id"
+        ],
+        "title": "Problem",
+        "type": "object"
+      },
+      "QualityGateOut": {
+        "properties": {
+          "evaluated": {
+            "title": "Evaluated",
+            "type": "boolean"
+          },
+          "reasons": {
+            "items": {
+              "$ref": "#/components/schemas/VerdictReasonOut"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "verdict": {
+            "anyOf": [
+              {
+                "enum": [
+                  "PASS",
+                  "FAIL",
+                  "NEUTRAL"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verdict"
+          }
+        },
+        "required": [
+          "evaluated",
+          "verdict",
+          "reasons"
+        ],
+        "title": "QualityGateOut",
+        "type": "object"
+      },
+      "RepositoryCountsOut": {
+        "properties": {
+          "open": {
+            "$ref": "#/components/schemas/SeverityCountsOut"
+          },
+          "repository": {
+            "$ref": "#/components/schemas/RepositoryRefOut"
+          }
+        },
+        "required": [
+          "repository",
+          "open"
+        ],
+        "title": "RepositoryCountsOut",
+        "type": "object"
+      },
+      "RepositoryList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RepositoryOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "RepositoryList",
+        "type": "object"
+      },
+      "RepositoryOut": {
+        "properties": {
+          "default_branch": {
+            "title": "Default Branch",
+            "type": "string"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "open_findings": {
+            "$ref": "#/components/schemas/SeverityCountsOut",
+            "description": "Findings con triage OPEN por severidad."
+          },
+          "owner": {
+            "title": "Owner",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "owner",
+          "name",
+          "default_branch",
+          "enabled",
+          "open_findings"
+        ],
+        "title": "RepositoryOut",
+        "type": "object"
+      },
+      "RepositoryRefOut": {
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "owner": {
+            "title": "Owner",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "owner",
+          "name"
+        ],
+        "title": "RepositoryRefOut",
+        "type": "object"
+      },
+      "RevokedSessionsOut": {
+        "properties": {
+          "revoked": {
+            "title": "Revoked",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revoked"
+        ],
+        "title": "RevokedSessionsOut",
+        "type": "object"
+      },
+      "Role": {
+        "enum": [
+          "VIEWER",
+          "TRIAGER",
+          "ADMIN"
+        ],
+        "type": "string"
+      },
+      "RuleCatalogOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RuleStatOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "RuleCatalogOut",
+        "type": "object"
+      },
+      "RuleStatOut": {
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "last_seen_at": {
+            "format": "date-time",
+            "title": "Last Seen At",
+            "type": "string"
+          },
+          "max_severity": {
+            "$ref": "#/components/schemas/Severity"
+          },
+          "open": {
+            "title": "Open",
+            "type": "integer"
+          },
+          "repositories": {
+            "title": "Repositories",
+            "type": "integer"
+          },
+          "rule_id": {
+            "title": "Rule Id",
+            "type": "string"
+          },
+          "scanner": {
+            "title": "Scanner",
+            "type": "string"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "rule_id",
+          "scanner",
+          "category",
+          "max_severity",
+          "open",
+          "total",
+          "repositories",
+          "last_seen_at"
+        ],
+        "title": "RuleStatOut",
+        "type": "object"
+      },
+      "ScanActivityList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ScanActivityOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "ScanActivityList",
+        "type": "object"
+      },
+      "ScanActivityOut": {
+        "properties": {
+          "repository": {
+            "$ref": "#/components/schemas/RepositoryRefOut"
+          },
+          "scan": {
+            "$ref": "#/components/schemas/ScanOut"
+          }
+        },
+        "required": [
+          "scan",
+          "repository"
+        ],
+        "title": "ScanActivityOut",
+        "type": "object"
+      },
+      "ScanLogList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ScanLogOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "ScanLogList",
+        "type": "object"
+      },
+      "ScanLogOut": {
+        "properties": {
+          "at": {
+            "format": "date-time",
+            "title": "At",
+            "type": "string"
+          },
+          "level": {
+            "enum": [
+              "INFO",
+              "WARNING",
+              "ERROR"
+            ],
+            "title": "Level",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "seq": {
+            "title": "Seq",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "seq",
+          "at",
+          "level",
+          "message"
+        ],
+        "title": "ScanLogOut",
+        "type": "object"
+      },
+      "ScanOut": {
+        "properties": {
+          "commit": {
+            "title": "Commit",
+            "type": "string"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "pull_request_number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pull Request Number"
+          },
+          "queued_at": {
+            "format": "date-time",
+            "title": "Queued At",
+            "type": "string"
+          },
+          "ref": {
+            "title": "Ref",
+            "type": "string"
+          },
+          "repository_id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "status_reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StatusReasonOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScanSummaryOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "superseded_by": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "trigger": {
+            "title": "Trigger",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "repository_id",
+          "commit",
+          "ref",
+          "trigger",
+          "status",
+          "pull_request_number",
+          "queued_at",
+          "started_at",
+          "finished_at",
+          "status_reason",
+          "superseded_by",
+          "summary"
+        ],
+        "title": "ScanOut",
+        "type": "object"
+      },
+      "ScanPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ScanOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "title": "ScanPage",
+        "type": "object"
+      },
+      "ScanSummaryOut": {
+        "properties": {
+          "new": {
+            "$ref": "#/components/schemas/SeverityCountsOut"
+          },
+          "open": {
+            "$ref": "#/components/schemas/SeverityCountsOut"
+          },
+          "tools": {
+            "description": "Escáneres que analizaron el commit. Vacío en escaneos anteriores al ADR 0029.",
+            "items": {
+              "$ref": "#/components/schemas/ToolRunOut"
+            },
+            "title": "Tools",
+            "type": "array"
+          },
+          "truncated": {
+            "title": "Truncated",
+            "type": "boolean"
+          },
+          "verdict": {
+            "enum": [
+              "PASS",
+              "FAIL",
+              "NEUTRAL"
+            ],
+            "title": "Verdict",
+            "type": "string"
+          }
+        },
+        "required": [
+          "new",
+          "open",
+          "verdict",
+          "truncated",
+          "tools"
+        ],
+        "title": "ScanSummaryOut",
+        "type": "object"
+      },
+      "ScannerCountsOut": {
+        "properties": {
+          "open": {
+            "$ref": "#/components/schemas/SeverityCountsOut"
+          },
+          "scanner": {
+            "title": "Scanner",
+            "type": "string"
+          }
+        },
+        "required": [
+          "scanner",
+          "open"
+        ],
+        "title": "ScannerCountsOut",
+        "type": "object"
+      },
+      "ScannerReportOut": {
+        "properties": {
+          "recent": {
+            "items": {
+              "$ref": "#/components/schemas/ScanActivityOut"
+            },
+            "title": "Recent",
+            "type": "array"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/ToolUsageOut"
+            },
+            "title": "Versions",
+            "type": "array"
+          },
+          "without_tools": {
+            "description": "Escaneos de la muestra sin datos de versión (anteriores al ADR 0029).",
+            "title": "Without Tools",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "versions",
+          "recent",
+          "without_tools"
+        ],
+        "title": "ScannerReportOut",
+        "type": "object"
+      },
+      "SessionInfoOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "current": {
+            "title": "Current",
+            "type": "boolean"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^[0-9a-f]{32}$",
+            "title": "Id",
+            "type": "string"
+          },
+          "last_seen_at": {
+            "format": "date-time",
+            "title": "Last Seen At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "last_seen_at",
+          "expires_at",
+          "current"
+        ],
+        "title": "SessionInfoOut",
+        "type": "object"
+      },
+      "SessionList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SessionInfoOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "SessionList",
+        "type": "object"
+      },
+      "SessionOut": {
+        "properties": {
+          "csrf_token": {
+            "title": "Csrf Token",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/SessionUser"
+          }
+        },
+        "required": [
+          "user",
+          "csrf_token",
+          "expires_at"
+        ],
+        "title": "SessionOut",
+        "type": "object"
+      },
+      "SessionUser": {
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          }
+        },
+        "required": [
+          "id",
+          "display_name"
+        ],
+        "title": "SessionUser",
+        "type": "object"
+      },
+      "Severity": {
+        "enum": [
+          "CRITICAL",
+          "HIGH",
+          "MEDIUM",
+          "LOW",
+          "INFO"
+        ],
+        "type": "string"
+      },
+      "SeverityCountsOut": {
+        "properties": {
+          "critical": {
+            "title": "Critical",
+            "type": "integer"
+          },
+          "high": {
+            "title": "High",
+            "type": "integer"
+          },
+          "info": {
+            "title": "Info",
+            "type": "integer"
+          },
+          "low": {
+            "title": "Low",
+            "type": "integer"
+          },
+          "medium": {
+            "title": "Medium",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "critical",
+          "high",
+          "medium",
+          "low",
+          "info"
+        ],
+        "title": "SeverityCountsOut",
+        "type": "object"
+      },
+      "SeverityLimitIn": {
+        "additionalProperties": false,
+        "properties": {
+          "severity": {
+            "$ref": "#/components/schemas/Severity"
+          },
+          "value": {
+            "maximum": 1000000,
+            "minimum": 0,
+            "title": "Value",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "severity",
+          "value"
+        ],
+        "title": "SeverityLimitIn",
+        "type": "object"
+      },
+      "SeverityLimitOut": {
+        "properties": {
+          "severity": {
+            "$ref": "#/components/schemas/Severity"
+          },
+          "value": {
+            "title": "Value",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "severity",
+          "value"
+        ],
+        "title": "SeverityLimitOut",
+        "type": "object"
+      },
+      "SlaStatusOut": {
+        "properties": {
+          "days": {
+            "title": "Days",
+            "type": "integer"
+          },
+          "overdue": {
+            "title": "Overdue",
+            "type": "integer"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/Severity"
+          }
+        },
+        "required": [
+          "severity",
+          "days",
+          "overdue"
+        ],
+        "title": "SlaStatusOut",
+        "type": "object"
+      },
+      "StartScanOut": {
+        "properties": {
+          "created": {
+            "title": "Created",
+            "type": "boolean"
+          },
+          "scan_id": {
+            "$ref": "#/components/schemas/Uuid"
+          }
+        },
+        "required": [
+          "scan_id",
+          "created"
+        ],
+        "title": "StartScanOut",
+        "type": "object"
+      },
+      "StartScanRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "commit": {
+            "description": "SHA-1 completo del commit.",
+            "pattern": "^[0-9a-f]{40}$",
+            "title": "Commit",
+            "type": "string"
+          },
+          "ref": {
+            "description": "Rama o referencia git.",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "commit",
+          "ref"
+        ],
+        "title": "StartScanRequest",
+        "type": "object"
+      },
+      "StatusReasonOut": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "detail"
+        ],
+        "title": "StatusReasonOut",
+        "type": "object"
+      },
+      "ToolRunOut": {
+        "properties": {
+          "findings": {
+            "title": "Findings",
+            "type": "integer"
+          },
+          "image_digest": {
+            "title": "Image Digest",
+            "type": "string"
+          },
+          "scanner": {
+            "title": "Scanner",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "scanner",
+          "version",
+          "image_digest",
+          "findings"
+        ],
+        "title": "ToolRunOut",
+        "type": "object"
+      },
+      "ToolUsageOut": {
+        "properties": {
+          "first_used_at": {
+            "format": "date-time",
+            "title": "First Used At",
+            "type": "string"
+          },
+          "image_digest": {
+            "title": "Image Digest",
+            "type": "string"
+          },
+          "last_used_at": {
+            "format": "date-time",
+            "title": "Last Used At",
+            "type": "string"
+          },
+          "scanner": {
+            "title": "Scanner",
+            "type": "string"
+          },
+          "scans": {
+            "title": "Scans",
+            "type": "integer"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "scanner",
+          "version",
+          "image_digest",
+          "scans",
+          "first_used_at",
+          "last_used_at"
+        ],
+        "title": "ToolUsageOut",
+        "type": "object"
+      },
+      "TrendPointOut": {
+        "properties": {
+          "day": {
+            "format": "date",
+            "title": "Day",
+            "type": "string"
+          },
+          "open": {
+            "$ref": "#/components/schemas/SeverityCountsOut"
+          }
+        },
+        "required": [
+          "day",
+          "open"
+        ],
+        "title": "TrendPointOut",
+        "type": "object"
+      },
+      "TriageOut": {
+        "properties": {
+          "decision_id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "state": {
+            "$ref": "#/components/schemas/TriageState"
+          }
+        },
+        "required": [
+          "decision_id",
+          "state"
+        ],
+        "title": "TriageOut",
+        "type": "object"
+      },
+      "TriageRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expires_at": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "ISO 8601 con zona horaria. Obligatoria para ACCEPTED_RISK, prohibida si no.",
+            "title": "Expires At"
+          },
+          "justification": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Obligatoria para FALSE_POSITIVE y ACCEPTED_RISK (mínimo 10 caracteres).",
+            "title": "Justification"
+          },
+          "state": {
+            "$ref": "#/components/schemas/TriageState"
+          }
+        },
+        "required": [
+          "state"
+        ],
+        "title": "TriageRequest",
+        "type": "object"
+      },
+      "TriageState": {
+        "enum": [
+          "OPEN",
+          "FALSE_POSITIVE",
+          "ACCEPTED_RISK",
+          "FIXED"
+        ],
+        "type": "string"
+      },
+      "Uuid": {
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+        "type": "string"
+      },
+      "VerdictReasonOut": {
+        "properties": {
+          "blocking": {
+            "title": "Blocking",
+            "type": "boolean"
+          },
+          "kind": {
+            "enum": [
+              "GATE",
+              "SLA",
+              "TRUNCATED"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "observed": {
+            "title": "Observed",
+            "type": "integer"
+          },
+          "rule": {
+            "title": "Rule",
+            "type": "string"
+          },
+          "severity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Severity"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "rule",
+          "blocking",
+          "severity",
+          "observed",
+          "limit"
+        ],
+        "title": "VerdictReasonOut",
+        "type": "object"
+      },
+      "WebhookActivityOut": {
+        "properties": {
+          "counters": {
+            "items": {
+              "$ref": "#/components/schemas/WebhookCounterOut"
+            },
+            "title": "Counters",
+            "type": "array"
+          },
+          "outcomes": {
+            "items": {
+              "$ref": "#/components/schemas/OutcomeCountOut"
+            },
+            "title": "Outcomes",
+            "type": "array"
+          },
+          "recent": {
+            "items": {
+              "$ref": "#/components/schemas/DeliveryOut"
+            },
+            "title": "Recent",
+            "type": "array"
+          }
+        },
+        "required": [
+          "recent",
+          "outcomes",
+          "counters"
+        ],
+        "title": "WebhookActivityOut",
+        "type": "object"
+      },
+      "WebhookCounterOut": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "minute": {
+            "format": "date-time",
+            "title": "Minute",
+            "type": "string"
+          },
+          "reason": {
+            "enum": [
+              "SIGNATURE",
+              "MEDIA_TYPE",
+              "MALFORMED",
+              "DUPLICATE"
+            ],
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "minute",
+          "reason",
+          "count"
+        ],
+        "title": "WebhookCounterOut",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "csrfToken": {
+        "in": "header",
+        "name": "X-CSRF-Token",
+        "type": "apiKey"
+      },
+      "sessionCookie": {
+        "in": "cookie",
+        "name": "__Host-nave_session",
+        "type": "apiKey"
+      }
+    }
+  },
+  "info": {
+    "description": "API de NAVE. Autenticación por cookie de sesión (login OIDC en `/api/v1/auth/login`); las peticiones que modifican datos exigen además la cabecera `Origin` del sitio y `X-CSRF-Token` (se obtiene en `/api/v1/session`). Los errores son RFC 7807.",
+    "title": "NAVE API",
+    "version": "1.0.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/auth/callback": {
+      "get": {
+        "description": "No requiere sesión.",
+        "operationId": "loginCallback",
+        "parameters": [
+          {
+            "description": "Valor `state` devuelto por el proveedor",
+            "in": "query",
+            "name": "state",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Código de autorización",
+            "in": "query",
+            "name": "code",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Correcto"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Login fallido"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [],
+        "summary": "Vuelta del proveedor OIDC: crea la sesión y redirige a `/`",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/login": {
+      "get": {
+        "description": "No requiere sesión.",
+        "operationId": "login",
+        "parameters": [],
+        "responses": {
+          "302": {
+            "description": "Correcto"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Login fallido"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [],
+        "summary": "Inicia el login OIDC (redirige al proveedor)",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "description": "Requiere sesión. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "logout",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Origin o token CSRF incorrectos, o rol insuficiente"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "csrfToken": [],
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Cierra la sesión",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/findings/{finding_id}": {
+      "get": {
+        "description": "Requiere rol VIEWER o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "getFinding",
+        "parameters": [
+          {
+            "description": "Identificador del finding",
+            "in": "path",
+            "name": "finding_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FindingDetailOut"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Detalle e historial de triage de un finding",
+        "tags": [
+          "findings"
+        ]
+      }
+    },
+    "/findings/{finding_id}/triage": {
+      "post": {
+        "description": "Requiere rol TRIAGER o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "triageFinding",
+        "parameters": [
+          {
+            "description": "Identificador del finding",
+            "in": "path",
+            "name": "finding_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TriageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TriageOut"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Origin o token CSRF incorrectos, o rol insuficiente"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflicto con el estado actual"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "csrfToken": [],
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Registra una decisión de triage",
+        "tags": [
+          "findings"
+        ]
+      }
+    },
+    "/me": {
+      "get": {
+        "description": "Requiere sesión. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "getMe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeOut"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Usuario de la sesión y si administra la plataforma",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/me/sessions": {
+      "delete": {
+        "description": "Requiere sesión. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "revokeOtherSessions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevokedSessionsOut"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Origin o token CSRF incorrectos, o rol insuficiente"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "csrfToken": [],
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Cierra todas las sesiones del usuario salvo la actual",
+        "tags": [
+          "auth"
+        ]
+      },
+      "get": {
+        "description": "Requiere sesión. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "listMySessions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionList"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Sesiones abiertas del usuario",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/me/sessions/{session_id}": {
+      "delete": {
+        "description": "Requiere sesión. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "revokeSession",
+        "parameters": [
+          {
+            "description": "Identificador de la sesión (32 hex)",
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Origin o token CSRF incorrectos, o rol insuficiente"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "csrfToken": [],
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Cierra otra sesión del usuario (la actual se cierra con el logout)",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/organizations": {
+      "get": {
+        "description": "Requiere sesión. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "listOrganizations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationList"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Organizaciones del usuario",
+        "tags": [
+          "organizations"
+        ]
+      }
+    },
+    "/organizations/{organization_id}/accepted-risks": {
+      "get": {
+        "description": "Requiere rol VIEWER o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "listAcceptedRisks",
+        "parameters": [
+          {
+            "description": "Identificador de la organización",
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FindingRowList"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Riesgos aceptados de una organización, el que caduca antes primero",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/organizations/{organization_id}/audit-log": {
+      "get": {
+        "description": "Requiere rol ADMIN o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "listAuditLog",
+        "parameters": [
+          {
+            "description": "Identificador de la organización",
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Tamaño de página (1-200, por defecto 50)",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Cursor opaco devuelto por la página anterior",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditPage"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Registro de auditoría de una organización, lo más reciente primero",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/organizations/{organization_id}/dependencies": {
+      "get": {
+        "description": "Requiere rol VIEWER o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "listDependencyFindings",
+        "parameters": [
+          {
+            "description": "Identificador de la organización",
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FindingRowList"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Dependencias vulnerables (SCA) de una organización",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/organizations/{organization_id}/export": {
+      "get": {
+        "description": "Requiere rol VIEWER o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "exportOrganizationFindings",
+        "parameters": [
+          {
+            "description": "Identificador de la organización",
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Vista: `triage`, `dependencies` o `accepted-risks`",
+            "in": "query",
+            "name": "view",
+            "required": true,
+            "schema": {
+              "enum": [
+                "triage",
+                "dependencies",
+                "accepted-risks"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "`csv` o `sarif`",
+            "in": "query",
+            "name": "format",
+            "required": true,
+            "schema": {
+              "enum": [
+                "csv",
+                "sarif"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Repetible. CRITICAL, HIGH, MEDIUM, LOW o INFO",
+            "in": "query",
+            "name": "severity",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Repetible. Identificador del escáner (`semgrep`, `trivy`)",
+            "in": "query",
+            "name": "scanner",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Solo hallazgos de este repositorio de la organización",
+            "in": "query",
+            "name": "repository_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/sarif+json": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              },
+              "text/csv": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Descarga una vista de hallazgos de la organización en CSV o SARIF",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/organizations/{organization_id}/failed-scans": {
+      "get": {
+        "description": "Requiere rol VIEWER o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "listFailedScans",
+        "parameters": [
+          {
+            "description": "Identificador de la organización",
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailedScanList"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Escaneos fallidos o agotados de una organización, el más reciente primero",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/organizations/{organization_id}/members": {
+      "get": {
+        "description": "Requiere rol ADMIN o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "listMembers",
+        "parameters": [
+          {
+            "description": "Identificador de la organización",
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberList"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Miembros de una organización",
+        "tags": [
+          "organizations"
+        ]
+      }
+    },
+    "/organizations/{organization_id}/members/{user_id}": {
+      "delete": {
+        "description": "Requiere rol ADMIN o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "removeMember",
+        "parameters": [
+          {
+            "description": "Identificador de la organización",
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identificador del usuario",
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Origin o token CSRF incorrectos, o rol insuficiente"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflicto con el estado actual"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "csrfToken": [],
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Retira a un miembro",
+        "tags": [
+          "organizations"
+        ]
+      },
+      "put": {
+        "description": "Requiere rol ADMIN o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "setMemberRole",
+        "parameters": [
+          {
+            "description": "Identificador de la organización",
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identificador del usuario",
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberRoleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Origin o token CSRF incorrectos, o rol insuficiente"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflicto con el estado actual"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "csrfToken": [],
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Crea o cambia el rol de un miembro",
+        "tags": [
+          "organizations"
+        ]
+      }
+    },
+    "/organizations/{organization_id}/policy": {
+      "get": {
+        "description": "Requiere rol VIEWER o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "getPolicyHistory",
+        "parameters": [
+          {
+            "description": "Identificador de la organización",
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyHistoryOut"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Versiones de la política de quality gates, la más reciente primero",
+        "tags": [
+          "insights"
+        ]
+      },
+      "put": {
+        "description": "Requiere rol ADMIN o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "updatePolicy",
+        "parameters": [
+          {
+            "description": "Identificador de la organización",
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyPublishedOut"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Origin o token CSRF incorrectos, o rol insuficiente"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflicto con el estado actual"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "csrfToken": [],
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Publica una versión nueva de la política de quality gates",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/organizations/{organization_id}/pull-requests": {
+      "get": {
+        "description": "Requiere rol VIEWER o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "listPullRequests",
+        "parameters": [
+          {
+            "description": "Identificador de la organización",
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScanActivityList"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Último escaneo de cada pull request de una organización",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/organizations/{organization_id}/repositories": {
+      "get": {
+        "description": "Requiere rol VIEWER o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "listRepositories",
+        "parameters": [
+          {
+            "description": "Identificador de la organización",
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryList"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Repositorios de una organización",
+        "tags": [
+          "organizations"
+        ]
+      }
+    },
+    "/organizations/{organization_id}/rules": {
+      "get": {
+        "description": "Requiere rol VIEWER o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "listRuleCatalog",
+        "parameters": [
+          {
+            "description": "Identificador de la organización",
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleCatalogOut"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Reglas que han producido hallazgos en una organización",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/organizations/{organization_id}/scanners": {
+      "get": {
+        "description": "Requiere rol VIEWER o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "getScannerReport",
+        "parameters": [
+          {
+            "description": "Identificador de la organización",
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScannerReportOut"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Versiones de escáner usadas en los escaneos recientes de una organización",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/organizations/{organization_id}/scans": {
+      "get": {
+        "description": "Requiere rol VIEWER o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "listOrganizationScans",
+        "parameters": [
+          {
+            "description": "Identificador de la organización",
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScanActivityList"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Escaneos en curso y recientes de todos los repositorios de una organización",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/organizations/{organization_id}/stats": {
+      "get": {
+        "description": "Requiere rol VIEWER o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "getOrganizationStats",
+        "parameters": [
+          {
+            "description": "Identificador de la organización",
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationStatsOut"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Estadísticas de hallazgos de una organización",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/organizations/{organization_id}/triage-queue": {
+      "get": {
+        "description": "Requiere rol VIEWER o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "listTriageQueue",
+        "parameters": [
+          {
+            "description": "Identificador de la organización",
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Repetible. CRITICAL, HIGH, MEDIUM, LOW o INFO",
+            "in": "query",
+            "name": "severity",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Repetible. Identificador del escáner (`semgrep`, `trivy`)",
+            "in": "query",
+            "name": "scanner",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Solo hallazgos de este repositorio de la organización",
+            "in": "query",
+            "name": "repository_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Tamaño de página (1-200, por defecto 50)",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Cursor opaco devuelto por la página anterior",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FindingRowPage"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Hallazgos abiertos de toda la organización, por severidad y antigüedad",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/platform/health": {
+      "get": {
+        "description": "Requiere sesión. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "getPlatformHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthOut"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Salud de los servicios de NAVE (administración de plataforma)",
+        "tags": [
+          "platform"
+        ]
+      }
+    },
+    "/platform/organizations": {
+      "get": {
+        "description": "Requiere sesión. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "listPlatformOrganizations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformOrganizationList"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Organizaciones de la instalación (administración de plataforma)",
+        "tags": [
+          "platform"
+        ]
+      }
+    },
+    "/platform/users": {
+      "get": {
+        "description": "Requiere sesión. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "listPlatformUsers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformUserList"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Usuarios de la instalación con sus organizaciones (administración de plataforma)",
+        "tags": [
+          "platform"
+        ]
+      }
+    },
+    "/platform/users/{user_id}/memberships/{organization_id}": {
+      "delete": {
+        "description": "Requiere sesión. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "removePlatformMembership",
+        "parameters": [
+          {
+            "description": "Identificador del usuario",
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identificador de la organización",
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Origin o token CSRF incorrectos, o rol insuficiente"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflicto con el estado actual"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "csrfToken": [],
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Retira a un usuario de una organización (administración de plataforma)",
+        "tags": [
+          "platform"
+        ]
+      },
+      "put": {
+        "description": "Requiere sesión. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "setPlatformMembership",
+        "parameters": [
+          {
+            "description": "Identificador del usuario",
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identificador de la organización",
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberRoleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Origin o token CSRF incorrectos, o rol insuficiente"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflicto con el estado actual"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "csrfToken": [],
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Da o cambia el rol de un usuario en una organización (administración de plataforma)",
+        "tags": [
+          "platform"
+        ]
+      }
+    },
+    "/platform/users/{user_id}/sessions": {
+      "delete": {
+        "description": "Requiere sesión. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "revokeUserSessions",
+        "parameters": [
+          {
+            "description": "Identificador del usuario",
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevokedSessionsOut"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Origin o token CSRF incorrectos, o rol insuficiente"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "csrfToken": [],
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Cierra todas las sesiones de un usuario (administración de plataforma)",
+        "tags": [
+          "platform"
+        ]
+      }
+    },
+    "/platform/webhooks": {
+      "get": {
+        "description": "Requiere sesión. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "getWebhookActivity",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookActivityOut"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Entregas de webhooks de GitHub, rechazos y duplicados (administración de plataforma)",
+        "tags": [
+          "platform"
+        ]
+      }
+    },
+    "/repositories/{repository_id}/findings": {
+      "get": {
+        "description": "Requiere rol VIEWER o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "listFindings",
+        "parameters": [
+          {
+            "description": "Identificador del repositorio",
+            "in": "path",
+            "name": "repository_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Repetible. CRITICAL, HIGH, MEDIUM, LOW o INFO",
+            "in": "query",
+            "name": "severity",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Repetible. OPEN, FALSE_POSITIVE, ACCEPTED_RISK o FIXED",
+            "in": "query",
+            "name": "state",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Repetible. Identificador del escáner (`semgrep`, `trivy`)",
+            "in": "query",
+            "name": "scanner",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Solo los vistos en este escaneo (incluye la ocurrencia)",
+            "in": "query",
+            "name": "seen_in_scan",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "`true`: solo los nuevos en `seen_in_scan`",
+            "in": "query",
+            "name": "only_new",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Tamaño de página (1-200, por defecto 50)",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Cursor opaco devuelto por la página anterior",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FindingPage"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Findings de un repositorio",
+        "tags": [
+          "findings"
+        ]
+      }
+    },
+    "/repositories/{repository_id}/findings/export": {
+      "get": {
+        "description": "Requiere rol VIEWER o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "exportRepositoryFindings",
+        "parameters": [
+          {
+            "description": "Identificador del repositorio",
+            "in": "path",
+            "name": "repository_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "`csv` o `sarif`",
+            "in": "query",
+            "name": "format",
+            "required": true,
+            "schema": {
+              "enum": [
+                "csv",
+                "sarif"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Repetible. CRITICAL, HIGH, MEDIUM, LOW o INFO",
+            "in": "query",
+            "name": "severity",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Repetible. OPEN, FALSE_POSITIVE, ACCEPTED_RISK o FIXED",
+            "in": "query",
+            "name": "state",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Repetible. Identificador del escáner (`semgrep`, `trivy`)",
+            "in": "query",
+            "name": "scanner",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/sarif+json": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              },
+              "text/csv": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Descarga los hallazgos de un repositorio en CSV o SARIF",
+        "tags": [
+          "findings"
+        ]
+      }
+    },
+    "/repositories/{repository_id}/scans": {
+      "get": {
+        "description": "Requiere rol VIEWER o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "listScans",
+        "parameters": [
+          {
+            "description": "Identificador del repositorio",
+            "in": "path",
+            "name": "repository_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Tamaño de página (1-200, por defecto 50)",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Cursor opaco devuelto por la página anterior",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScanPage"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Escaneos de un repositorio, el más reciente primero",
+        "tags": [
+          "scans"
+        ]
+      },
+      "post": {
+        "description": "Requiere rol TRIAGER o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "startScan",
+        "parameters": [
+          {
+            "description": "Identificador del repositorio",
+            "in": "path",
+            "name": "repository_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "UUID elegido por el cliente. Repetir la petición con la misma clave no crea otro escaneo (200 en lugar de 202).",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartScanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StartScanOut"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StartScanOut"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Origin o token CSRF incorrectos, o rol insuficiente"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflicto con el estado actual"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "csrfToken": [],
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Pide un escaneo manual de un commit",
+        "tags": [
+          "scans"
+        ]
+      }
+    },
+    "/scans/{scan_id}": {
+      "get": {
+        "description": "Requiere rol VIEWER o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "getScan",
+        "parameters": [
+          {
+            "description": "Identificador del escaneo",
+            "in": "path",
+            "name": "scan_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScanOut"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Estado de un escaneo",
+        "tags": [
+          "scans"
+        ]
+      }
+    },
+    "/scans/{scan_id}/cancel": {
+      "post": {
+        "description": "Requiere rol TRIAGER o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "cancelScan",
+        "parameters": [
+          {
+            "description": "Identificador del escaneo",
+            "in": "path",
+            "name": "scan_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancelScanOut"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Origin o token CSRF incorrectos, o rol insuficiente"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "csrfToken": [],
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Cancela un escaneo",
+        "tags": [
+          "scans"
+        ]
+      }
+    },
+    "/scans/{scan_id}/logs": {
+      "get": {
+        "description": "Requiere rol VIEWER o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "listScanLogs",
+        "parameters": [
+          {
+            "description": "Identificador del escaneo",
+            "in": "path",
+            "name": "scan_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Devuelve solo entradas con `seq` mayor",
+            "in": "query",
+            "name": "after_seq",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Máximo de entradas (1-500, por defecto 200)",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "maximum": 500,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScanLogList"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Registro de un escaneo",
+        "tags": [
+          "scans"
+        ]
+      }
+    },
+    "/scans/{scan_id}/quality-gate": {
+      "get": {
+        "description": "Requiere rol VIEWER o superior en la organización. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "getQualityGate",
+        "parameters": [
+          {
+            "description": "Identificador del escaneo",
+            "in": "path",
+            "name": "scan_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualityGateOut"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "No existe o pertenece a otra organización"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Resultado de los quality gates de un escaneo",
+        "tags": [
+          "scans"
+        ]
+      }
+    },
+    "/session": {
+      "get": {
+        "description": "Requiere sesión. Un recurso de otra organización responde 404, igual que uno inexistente.",
+        "operationId": "getSession",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionOut"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Petición no válida"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Sin sesión válida"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Demasiadas peticiones; `Retry-After` indica los segundos de espera"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Servicio temporalmente no disponible"
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "summary": "Usuario de la sesión y token CSRF",
+        "tags": [
+          "auth"
+        ]
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ]
+}

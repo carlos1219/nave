@@ -1,0 +1,377 @@
+# Despliegue de NAVE (ADR 0022, docs/architecture/despliegue.md). Todas las imágenes salen de
+# variables obligatorias con digest (`deploy/images.env`); sin ellas, Compose no arranca.
+#
+#   python deploy/scripts/init_secrets.py
+#   docker compose --env-file deploy/images.env --env-file deploy/.env up -d
+#   docker compose --profile ops run --rm migrate
+#
+# Redes: `public` (la única con salida a Internet, solo frontend y egress-proxy), `edge`,
+# `internal`, `runner` y `egress` son `internal: true`. El proxy de salida está en `egress`
+# y en `public`: es la única ruta a Internet de worker, api (OIDC) y contenedores de fetch.
+
+x-hardened: &hardened
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  restart: unless-stopped
+  init: true
+
+x-backend-env: &backend-env
+  NAVE_LOG_LEVEL: ${NAVE_LOG_LEVEL:-INFO}
+  NAVE_REDIS_URL: redis://redis:6379/0
+  NAVE_REDIS_PASSWORD_FILE: /run/secrets/redis_password
+
+services:
+  frontend:
+    <<: *hardened
+    image: ${NAVE_FRONTEND_IMAGE:?imagen con digest en deploy/images.env}
+    user: "101:101"
+    ports:
+      - "80:8080"
+      - "443:8443"
+    networks: [public, edge]
+    secrets: [tls_cert, tls_key]
+    volumes:
+      - ${NAVE_HSTS_FILE:-./deploy/nginx/snippets/hsts-prod.conf}:/etc/nginx/snippets/hsts.conf:ro
+    tmpfs: ["/tmp:size=64m,mode=1777"]
+    mem_limit: 256m
+    cpus: 1.0
+    pids_limit: 128
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/nginx-healthz || curl -fs -o /dev/null http://127.0.0.1:8080/nginx-healthz"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+    depends_on:
+      api: {condition: service_healthy}
+
+  api:
+    <<: *hardened
+    image: ${NAVE_BACKEND_IMAGE:?imagen con digest en deploy/images.env}
+    command:
+      - gunicorn
+      - --bind=0.0.0.0:8000
+      - --workers=${NAVE_API_WORKERS:-4}
+      - --worker-tmp-dir=/dev/shm
+      - --timeout=60
+      - --graceful-timeout=20
+      - --limit-request-line=4094
+      - --limit-request-fields=50
+      - --access-logfile=-
+      - --no-control-socket
+      # Escapa saltos de línea y comillas de la ruta y redacta secretos (F7-29).
+      - --logger-class=nave.infrastructure.observability.gunicorn_logger.AccessLogger
+      # Sin consulta (AM-921): el callback OIDC lleva `code` y `state` en la URL.
+      - '--access-logformat=%(h)s "%(m)s %(U)s" %(s)s %(b)s %(L)s'
+      - nave.bootstrap.api:api_app()
+    environment:
+      <<: *backend-env
+      NAVE_DATABASE_URL: postgresql+psycopg://nave_app@postgres:5432/nave
+      NAVE_DATABASE_PASSWORD_FILE: /run/secrets/db_app_password
+      NAVE_GITHUB_WEBHOOK_SECRET_FILE: /run/secrets/webhook_secret
+      NAVE_PUBLIC_URL: ${NAVE_PUBLIC_URL:?origen público, p. ej. https://nave.example.com}
+      NAVE_OIDC_ISSUER: ${NAVE_OIDC_ISSUER:?}
+      NAVE_OIDC_CLIENT_ID: ${NAVE_OIDC_CLIENT_ID:?}
+      NAVE_OIDC_CLIENT_SECRET_FILE: /run/secrets/oidc_client_secret
+      # Sin esta variable el discovery sale por el proxy (ADR 0020). En dev se fija vacía.
+      NAVE_OIDC_PROXY_URL: ${NAVE_OIDC_PROXY_URL-http://egress-proxy:4750}
+      NAVE_TRUSTED_PROXY_HOPS: "1"
+    networks: [edge, internal, egress]
+    secrets: [db_app_password, redis_password, webhook_secret, oidc_client_secret]
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+      - /dev/shm:size=64m
+    mem_limit: 512m
+    cpus: 1.5
+    pids_limit: 256
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:8000/healthz', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+
+  worker:
+    <<: *hardened
+    image: ${NAVE_BACKEND_IMAGE:?imagen con digest en deploy/images.env}
+    command:
+      - celery
+      - --app=nave.bootstrap.celery_worker
+      - worker
+      - --queues=scan,report,maintenance
+      - --pool=prefork
+      - --concurrency=${NAVE_WORKER_CONCURRENCY:-2}
+      - -Ofair
+    environment:
+      <<: *backend-env
+      NAVE_DATABASE_URL: postgresql+psycopg://nave_app@postgres:5432/nave
+      NAVE_DATABASE_PASSWORD_FILE: /run/secrets/db_app_password
+      NAVE_MAINTENANCE_DATABASE_URL: postgresql+psycopg://nave_maintenance@postgres:5432/nave
+      NAVE_MAINTENANCE_DATABASE_PASSWORD_FILE: /run/secrets/db_maintenance_password
+      NAVE_FINGERPRINT_KEY_FILE: /run/secrets/fingerprint_key
+      NAVE_RUNNER_URL: http://scan-runner:8080
+      NAVE_RUNNER_HMAC_KEY_FILE: /run/secrets/runner_hmac_key
+      NAVE_SEMGREP_VERSION: ${NAVE_SEMGREP_VERSION:?}
+      NAVE_TRIVY_VERSION: ${NAVE_TRIVY_VERSION:?}
+      NAVE_GITHUB_APP_ID: ${NAVE_GITHUB_APP_ID:?}
+      NAVE_GITHUB_APP_PRIVATE_KEY_FILE: /run/secrets/github_app_private_key
+      NAVE_GITHUB_ALLOWED_ACCOUNTS: ${NAVE_GITHUB_ALLOWED_ACCOUNTS:?}
+      NAVE_EGRESS_PROXY_URL: http://egress-proxy:4750
+    networks: [internal, runner, egress]
+    secrets:
+      - db_app_password
+      - db_maintenance_password
+      - redis_password
+      - github_app_private_key
+      - runner_hmac_key
+      - fingerprint_key
+    tmpfs: ["/tmp:size=64m,mode=1777"]
+    mem_limit: 1g
+    cpus: 2.0
+    pids_limit: 256
+    healthcheck:
+      test: ["CMD-SHELL", "celery --app=nave.bootstrap.celery_worker inspect ping --timeout 8 -d celery@$$HOSTNAME"]
+      interval: 60s
+      timeout: 20s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+      scan-runner: {condition: service_healthy}
+      egress-proxy: {condition: service_healthy}
+
+  scheduler:
+    <<: *hardened
+    image: ${NAVE_BACKEND_IMAGE:?imagen con digest en deploy/images.env}
+    command:
+      - celery
+      - --app=nave.bootstrap.celery_beat
+      - beat
+      - --schedule=/tmp/celerybeat-schedule
+      - --pidfile=/tmp/celerybeat.pid
+    environment:
+      <<: *backend-env
+    networks: [internal]
+    secrets: [redis_password]
+    tmpfs: ["/tmp:size=16m,mode=1777"]
+    mem_limit: 256m
+    cpus: 0.5
+    pids_limit: 64
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os; os.kill(int(open('/tmp/celerybeat.pid').read()), 0)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    depends_on:
+      redis: {condition: service_healthy}
+
+  postgres:
+    # Excepción documentada (ADR 0022): el entrypoint oficial necesita estas capacidades para
+    # ajustar propietarios del volumen y bajar privilegios. El resto de servicios no tiene `cap_add`.
+    read_only: true
+    cap_drop: [ALL]
+    cap_add: [CHOWN, SETUID, SETGID, FOWNER, DAC_OVERRIDE]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+    init: true
+    image: ${NAVE_POSTGRES_IMAGE:?imagen con digest en deploy/images.env}
+    command:
+      - postgres
+      - -c
+      - password_encryption=scram-sha-256
+      - -c
+      - log_connections=on
+      - -c
+      - log_disconnections=on
+    environment:
+      POSTGRES_USER: nave_admin
+      POSTGRES_DB: nave
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_superuser_password
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256 --data-checksums
+    networks: [internal]
+    secrets: [db_superuser_password, db_app_password, db_migrator_password, db_maintenance_password]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./deploy/postgres/init-roles.sh:/docker-entrypoint-initdb.d/10-roles.sh:ro
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+      - /var/run/postgresql:size=1m,mode=1777
+    mem_limit: 1g
+    cpus: 2.0
+    pids_limit: 256
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U nave_admin -d nave"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    <<: *hardened
+    image: ${NAVE_REDIS_IMAGE:?imagen con digest en deploy/images.env}
+    user: "999:999"
+    entrypoint: ["sh", "/entrypoint.sh"]
+    networks: [internal]
+    secrets: [redis_password]
+    volumes:
+      - ./deploy/redis/entrypoint.sh:/entrypoint.sh:ro
+    tmpfs: ["/tmp:size=16m,mode=1777"]
+    mem_limit: 384m
+    cpus: 1.0
+    pids_limit: 64
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$(cat /run/secrets/redis_password)\" redis-cli ping | grep -q PONG"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  scan-runner:
+    <<: *hardened
+    image: ${NAVE_RUNNER_IMAGE:?imagen con digest en deploy/images.env}
+    # Único componente con acceso al motor de contenedores (ADR 0002). En producción el motor
+    # es rootless; con Docker Desktop esto NO es un límite de seguridad (S-07).
+    group_add: ["${NAVE_ENGINE_SOCKET_GID:?GID del grupo propietario del socket del motor}"]
+    environment:
+      DOCKER_HOST: unix:///var/run/engine.sock
+      NAVE_RUNNER_HMAC_KEY_FILE: /run/secrets/runner_hmac_key
+      NAVE_RUNNER_SCANNERS: semgrep,trivy
+      NAVE_RUNNER_IMAGE_SEMGREP: ${NAVE_SEMGREP_IMAGE:?imagen con digest en deploy/images.env}
+      NAVE_RUNNER_VERSION_SEMGREP: ${NAVE_SEMGREP_VERSION:?}
+      NAVE_RUNNER_IMAGE_TRIVY: ${NAVE_TRIVY_IMAGE:?imagen con digest en deploy/images.env}
+      NAVE_RUNNER_VERSION_TRIVY: ${NAVE_TRIVY_VERSION:?}
+      NAVE_RUNNER_FETCH_IMAGE: ${NAVE_FETCHER_IMAGE:?imagen con digest en deploy/images.env}
+      NAVE_RUNNER_EGRESS_PROXY_URL: http://egress-proxy:4750
+      NAVE_RUNNER_EGRESS_NETWORK: nave-egress
+      NAVE_RUNNER_TRIVY_DB_VOLUME: nave-trivy-db
+      NAVE_RUNNER_RUNTIME: ${NAVE_RUNNER_RUNTIME:-}
+    networks: [runner]
+    secrets: [runner_hmac_key]
+    volumes:
+      - ${NAVE_ENGINE_SOCKET:?ruta del socket del motor}:/var/run/engine.sock
+    tmpfs: ["/tmp:size=16m,mode=1777"]
+    mem_limit: 256m
+    cpus: 1.0
+    pids_limit: 128
+    healthcheck:
+      test: ["CMD", "python", "-I", "-c", "import socket; socket.create_connection(('127.0.0.1', 8080), 3).close()"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  egress-proxy:
+    <<: *hardened
+    image: ${NAVE_EGRESS_PROXY_IMAGE:?imagen con digest en deploy/images.env}
+    user: "65532:65532"
+    command:
+      - --listen-ip=0.0.0.0
+      - --listen-port=4750
+      - --config-file=/etc/smokescreen/config.yaml
+    networks: [egress, public]
+    volumes:
+      - ./deploy/egress-proxy/config.yaml:/etc/smokescreen/config.yaml:ro
+      - ./deploy/egress-proxy/acl.yaml:/etc/smokescreen/acl.yaml:ro
+    tmpfs: ["/tmp:size=8m,mode=1777"]
+    mem_limit: 128m
+    cpus: 0.5
+    pids_limit: 64
+    healthcheck:
+      test: ["CMD", "/healthcheck", "4750"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+
+  # ---- trabajos puntuales (perfil ops) ----
+  migrate:
+    <<: *hardened
+    profiles: [ops]
+    restart: "no"
+    image: ${NAVE_BACKEND_IMAGE:?imagen con digest en deploy/images.env}
+    # Alembic necesita la URL completa; el secreto se lee dentro del contenedor.
+    command:
+      - sh
+      - -c
+      - 'NAVE_DATABASE_URL="postgresql+psycopg://nave_migrator:$$(cat /run/secrets/db_migrator_password)@postgres:5432/nave" exec alembic upgrade head'
+    networks: [internal]
+    secrets: [db_migrator_password]
+    tmpfs: ["/tmp:size=16m,mode=1777"]
+    mem_limit: 256m
+    cpus: 1.0
+    pids_limit: 64
+    depends_on:
+      postgres: {condition: service_healthy}
+
+  cli:
+    <<: *hardened
+    profiles: [ops]
+    restart: "no"
+    image: ${NAVE_BACKEND_IMAGE:?imagen con digest en deploy/images.env}
+    entrypoint: ["python", "-m", "nave.bootstrap.cli"]
+    environment:
+      NAVE_DATABASE_URL: postgresql+psycopg://nave_app@postgres:5432/nave
+      NAVE_DATABASE_PASSWORD_FILE: /run/secrets/db_app_password
+    networks: [internal]
+    secrets: [db_app_password]
+    tmpfs: ["/tmp:size=16m,mode=1777"]
+    mem_limit: 256m
+    cpus: 0.5
+    pids_limit: 64
+
+  # ---- solo desarrollo (perfil dev): NO es un límite de seguridad (ADR 0004, S-07) ----
+  keycloak:
+    profiles: [dev]
+    restart: unless-stopped
+    image: ${NAVE_KEYCLOAK_IMAGE:?imagen con digest en deploy/images.env}
+    command: ["start-dev", "--import-realm", "--https-port=8444", "--http-enabled=false"]
+    environment:
+      KC_HOSTNAME: https://keycloak.localhost:8444
+      KC_HTTPS_CERTIFICATE_FILE: /run/secrets/tls_cert
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /run/secrets/tls_key
+    ports:
+      - "127.0.0.1:8444:8444"
+    networks:
+      public: {}
+      internal:
+        aliases: [keycloak.localhost]
+    secrets: [tls_cert, tls_key]
+    volumes:
+      - ./deploy/keycloak/nave-realm.json:/opt/keycloak/data/import/nave-realm.json:ro
+    mem_limit: 1g
+    cpus: 1.5
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+
+networks:
+  public: {}
+  edge:
+    internal: true
+  internal:
+    internal: true
+  runner:
+    internal: true
+  egress:
+    name: nave-egress
+    internal: true
+
+volumes:
+  pgdata: {}
+  trivy-db:
+    name: nave-trivy-db
+
+secrets:
+  tls_cert: {file: ./deploy/secrets/tls_cert}
+  tls_key: {file: ./deploy/secrets/tls_key}
+  db_superuser_password: {file: ./deploy/secrets/db_superuser_password}
+  db_app_password: {file: ./deploy/secrets/db_app_password}
+  db_migrator_password: {file: ./deploy/secrets/db_migrator_password}
+  db_maintenance_password: {file: ./deploy/secrets/db_maintenance_password}
+  redis_password: {file: ./deploy/secrets/redis_password}
+  webhook_secret: {file: ./deploy/secrets/webhook_secret}
+  oidc_client_secret: {file: ./deploy/secrets/oidc_client_secret}
+  github_app_private_key: {file: ./deploy/secrets/github_app_private_key}
+  runner_hmac_key: {file: ./deploy/secrets/runner_hmac_key}
+  fingerprint_key: {file: ./deploy/secrets/fingerprint_key}

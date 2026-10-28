@@ -1,0 +1,16 @@
+.git
+.github
+**/node_modules
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+backend
+runner
+docs
+nave_sync.tar.gz
+deploy/secrets
+deploy/images.env
+frontend/dist
+frontend/coverage

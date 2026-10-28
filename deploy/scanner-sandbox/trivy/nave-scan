@@ -1,0 +1,31 @@
+#!/bin/sh
+# Envoltorio de Trivy. NO VERIFICADO contra el binario fijado: los flags están escritos
+# según la documentación de la rama 0.5x y deben validarse con la imagen real en CI
+# (fase 6) mediante tests/contract/test_scanner_ignores_repo_config antes de producción.
+# - Base de datos: /trivy-db (mirror controlado, ADR 0007) se enlaza, no se copia: ya ocupa
+#   más de 1 GiB y no cabe en la tmpfs (fase 7, F7-33). El montaje es de solo lectura y
+#   Trivy solo la lee; la caché propia del escaneo sí va a la tmpfs. No se descarga nada
+#   al escanear (--skip-db-update --offline-scan).
+# - Configuración: la de la plataforma (/etc/nave); el directorio de trabajo no es el repo.
+set -eu
+case "${NAVE_SCAN_TIMEOUT_SECONDS:-}" in
+    ''|*[!0-9]*) echo "invalid timeout" >&2; exit 64 ;;
+esac
+mkdir -p /tmp/trivy-cache
+ln -s /trivy-db/db /tmp/trivy-cache/db
+cd /workspace
+exec timeout "${NAVE_SCAN_TIMEOUT_SECONDS}" trivy fs \
+    --config /etc/nave/trivy.yaml \
+    --ignorefile /etc/nave/empty.trivyignore \
+    --secret-config /etc/nave/trivy-secret.yaml \
+    --cache-dir /tmp/trivy-cache \
+    --skip-db-update \
+    --skip-java-db-update \
+    --offline-scan \
+    --scanners vuln,secret,misconfig \
+    --format sarif \
+    --no-progress \
+    --quiet \
+    --disable-telemetry \
+    --exit-code 0 \
+    repo

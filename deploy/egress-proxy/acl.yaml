@@ -1,0 +1,15 @@
+# Allowlist de salida (ADR 0007). Smokescreen bloquea además rangos privados, loopback y
+# metadatos de la nube. Los clientes usan CONNECT; no se descifra TLS.
+version: v1
+# Los clientes (API, worker, runner) no presentan certificado: todos caen en `default`
+# (requiere `allow_missing_role` en config.yaml).
+services: []
+default:
+  name: nave
+  project: nave
+  action: enforce
+  allowed_domains:
+    - github.com
+    - api.github.com
+    - codeload.github.com
+    # Mirror de la BD de Trivy: añadir aquí cuando se decida (despliegue.md §5).

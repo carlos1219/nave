@@ -1,0 +1,29 @@
+rules:
+  - id: nave.python.subprocess-shell-true
+    languages: [python]
+    severity: ERROR
+    message: "Llamada a subprocess con shell=True: permite inyección de órdenes si la entrada no es de confianza."
+    pattern: subprocess.$FUNC(..., shell=True, ...)
+    metadata:
+      cwe: ["CWE-78: Improper Neutralization of Special Elements used in an OS Command"]
+  - id: nave.python.eval-call
+    languages: [python]
+    severity: ERROR
+    message: "Uso de eval(): ejecuta código arbitrario si la entrada no es de confianza."
+    pattern: eval(...)
+    metadata:
+      cwe: ["CWE-95: Eval Injection"]
+  - id: nave.python.pickle-loads
+    languages: [python]
+    severity: WARNING
+    message: "pickle.loads sobre datos no confiables permite ejecución de código."
+    pattern: pickle.loads(...)
+    metadata:
+      cwe: ["CWE-502: Deserialization of Untrusted Data"]
+  - id: nave.javascript.eval-call
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: "Uso de eval(): ejecuta código arbitrario si la entrada no es de confianza."
+    pattern: eval(...)
+    metadata:
+      cwe: ["CWE-95: Eval Injection"]

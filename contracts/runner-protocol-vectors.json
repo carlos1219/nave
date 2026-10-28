@@ -1,0 +1,27 @@
+{
+  "version": "NAVE-RUNNER-V1",
+  "key_hex": "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff",
+  "cases": [
+    {
+      "body": "{\"run_id\":\"0123456789abcdef0123456789abcdef\",\"step\":\"release\"}",
+      "timestamp": 1790000000,
+      "nonce": "01010101010101010101010101010101",
+      "string_to_sign": "NAVE-RUNNER-V1\nPOST\n/v1/runs\n1790000000\n01010101010101010101010101010101\nccba37a2c26b48cba331ac095a8467ee8ed78c599007a18e8080537edc15dda1",
+      "signature": "2cff4e034763470a8c2e753598555dbb6e814f8929cf585fe7348af093041d5a"
+    },
+    {
+      "body": "{\"max_output_bytes\":1048576,\"run_id\":\"0123456789abcdef0123456789abcdef\",\"scanner_kind\":\"semgrep\",\"step\":\"scan\",\"timeout_seconds\":600}",
+      "timestamp": 1790000001,
+      "nonce": "02020202020202020202020202020202",
+      "string_to_sign": "NAVE-RUNNER-V1\nPOST\n/v1/runs\n1790000001\n02020202020202020202020202020202\n190d53f748d30b6e2fbf1113e099cfdd6feb1fc6ed0ca44ddb5e978f533ba685",
+      "signature": "515fd188ef7e7184e3b216431df4c6c374c036903ff0b64ee740ffd895086661"
+    },
+    {
+      "body": "{\"commit_sha\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"max_bytes\":1073741824,\"max_files\":200000,\"name\":\"app\",\"owner\":\"acme\",\"run_id\":\"0123456789abcdef0123456789abcdef\",\"step\":\"fetch\",\"timeout_seconds\":300,\"token\":\"ghs_TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\"}",
+      "timestamp": 1790000002,
+      "nonce": "03030303030303030303030303030303",
+      "string_to_sign": "NAVE-RUNNER-V1\nPOST\n/v1/runs\n1790000002\n03030303030303030303030303030303\n9d078bd8ae72b0f56c3e3cbde0654f7fa2811cceb6fd20aecd0eac8abcf00084",
+      "signature": "948838fa2acad9412c0693aaf2af7fc019e4a385099176835bc64c8dd86a3b56"
+    }
+  ]
+}

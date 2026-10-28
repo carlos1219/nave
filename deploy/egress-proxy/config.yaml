@@ -1,0 +1,6 @@
+# Configuración de Smokescreen (ADR 0007). `allow_missing_role` es una opción de este fichero
+# (--config-file), no del ACL ni de la línea de comandos. Los clientes (API, worker, runner)
+# usan CONNECT sin certificado de cliente, así que todos caen en `default` del ACL; sin esta
+# opción el proxy responde 407 también a los destinos permitidos.
+allow_missing_role: true
+acl_file: /etc/smokescreen/acl.yaml

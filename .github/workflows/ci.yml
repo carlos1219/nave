@@ -1,0 +1,190 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+
+jobs:
+  backend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+      - name: Dependencias (con hashes)
+        run: |
+          python -m pip install --require-hashes -r requirements-dev.lock
+          python -m pip install --no-deps -e .
+      - run: ruff format --check src tests
+      - run: ruff check src tests
+      - run: mypy src tests
+      - run: lint-imports --config importlinter.ini
+      - name: Tests (con PostgreSQL desechable del runner)
+        run: |
+          PGBIN=$(ls -d /usr/lib/postgresql/*/bin | head -1)
+          "$PGBIN/initdb" -D "$RUNNER_TEMP/pg" -A trust -U postgres >/dev/null
+          "$PGBIN/pg_ctl" -D "$RUNNER_TEMP/pg" -o "-k $RUNNER_TEMP/pg -c listen_addresses=''" -w start
+          export NAVE_TEST_DATABASE_URL="postgresql+psycopg://postgres@/postgres?host=$RUNNER_TEMP/pg"
+          pytest --cov
+          "$PGBIN/pg_ctl" -D "$RUNNER_TEMP/pg" stop
+
+  frontend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm audit --audit-level=high
+      - run: npm run check
+      - run: npm run build
+
+  sandbox-and-runner:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --require-hashes -r backend/requirements-dev.lock
+      - name: Fetcher (path guard y clonado endurecido)
+        working-directory: deploy/scanner-sandbox/fetcher
+        run: |
+          ruff check .
+          pytest
+      - name: Runner (lint, tipos y tests; el threat model cita estos tests)
+        working-directory: runner
+        run: |
+          ruff check src tests
+          mypy
+          pytest --cov
+
+  deploy-static:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --require-hashes -r deploy/requirements-test.lock pytest==9.1.1
+      - name: Endurecimiento de Compose, Nginx y workflows
+        run: python -m pytest deploy/tests -q -p no:cacheprovider
+
+  self-scan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+      - name: Semgrep (misma versión y reglas que la plataforma)
+        run: |
+          python -m pip install --require-hashes -r deploy/scanner-sandbox/semgrep/requirements.lock
+          semgrep scan --metrics off --disable-version-check --error \
+            --config deploy/scanner-sandbox/semgrep/rules \
+            backend/src frontend/src runner/src deploy
+      - name: Trivy (dependencias, secretos y configuración)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          skip-dirs: node_modules,deploy/secrets
+        env:
+          TRIVY_SECRET_CONFIG: .github/trivy-secret.yaml
+
+  images:
+    # Construye sin publicar: detecta Dockerfiles rotos antes del merge.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - name: Digests de las bases
+        id: lock
+        run: |
+          if [ ! -f deploy/images.lock.env ]; then
+            echo "::warning::falta deploy/images.lock.env (python deploy/scripts/pin_images.py); no se construyen imágenes"
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          grep -E -v '^(#|$)' deploy/images.lock.env | grep -E -v '^NAVE_[A-Z_]+=[a-z0-9./:_-]+@sha256:[0-9a-f]{64}$' && { echo "::error::images.lock.env con formato no válido"; exit 1; }
+          grep -E -v '^(#|$)' deploy/images.lock.env >> "$GITHUB_ENV"
+          echo "present=true" >> "$GITHUB_OUTPUT"
+      - name: backend
+        if: steps.lock.outputs.present == 'true'
+        run: docker buildx build --build-arg PYTHON_IMAGE="$NAVE_PYTHON_IMAGE" backend
+      - name: frontend
+        if: steps.lock.outputs.present == 'true'
+        run: >
+          docker buildx build -f deploy/nginx/Dockerfile
+          --build-arg NODE_IMAGE="$NAVE_NODE_IMAGE" --build-arg NGINX_IMAGE="$NAVE_NGINX_IMAGE" .
+      - name: runner
+        if: steps.lock.outputs.present == 'true'
+        run: >
+          docker buildx build --build-arg PYTHON_IMAGE="$NAVE_PYTHON_IMAGE"
+          --build-arg DOCKER_CLI_IMAGE="$NAVE_DOCKER_CLI_IMAGE" runner
+      - name: fetcher
+        if: steps.lock.outputs.present == 'true'
+        run: docker buildx build --build-arg PYTHON_IMAGE="$NAVE_PYTHON_ALPINE_IMAGE" deploy/scanner-sandbox/fetcher
+      - name: semgrep (y sus flags contra el binario real)
+        if: steps.lock.outputs.present == 'true'
+        run: |
+          . deploy/scanner-versions.env
+          docker buildx build --load -t nave-semgrep:ci --build-arg PYTHON_IMAGE="$NAVE_PYTHON_IMAGE" \
+            --build-arg SEMGREP_VERSION="$NAVE_SEMGREP_VERSION" deploy/scanner-sandbox/semgrep
+          python deploy/scripts/check_scanner_flags.py nave-semgrep:ci deploy/scanner-sandbox/semgrep/nave-scan semgrep scan
+      - name: egress-proxy (compilado desde el módulo Go de la versión fijada)
+        if: steps.lock.outputs.present == 'true'
+        run: |
+          . deploy/build-versions.env
+          docker buildx build --load -t nave-egress-proxy:ci --build-arg GO_IMAGE="$NAVE_GO_IMAGE" \
+            --build-arg SMOKESCREEN_VERSION="$NAVE_SMOKESCREEN_VERSION" deploy/egress-proxy
+          docker run --rm --entrypoint /smokescreen nave-egress-proxy:ci --version
+          # La sonda del healthcheck (imagen scratch: sin shell ni nc) debe existir y fallar si no hay nadie escuchando.
+          if docker run --rm --entrypoint /healthcheck nave-egress-proxy:ci 1; then echo "::error::la sonda conectó a un puerto cerrado"; exit 1; fi
+      - name: trivy (y sus flags contra el binario real)
+        if: steps.lock.outputs.present == 'true'
+        run: |
+          docker buildx build --load -t nave-trivy:ci --build-arg TRIVY_IMAGE="$NAVE_TRIVY_BASE_IMAGE" deploy/scanner-sandbox/trivy
+          python deploy/scripts/check_scanner_flags.py nave-trivy:ci deploy/scanner-sandbox/trivy/nave-scan trivy fs

@@ -1,0 +1,12 @@
+# Desarrollo (Windows + Docker Desktop). NO es un límite de seguridad (S-07):
+#   python deploy/scripts/dev_certs.py
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile dev \
+#       --env-file deploy/images.env --env-file deploy/.env up -d
+# Keycloak se anuncia como https://keycloak.localhost:8444 tanto para el navegador (puerto
+# publicado) como para la API (alias en la red `internal`), con el mismo certificado.
+services:
+  api:
+    environment:
+      NAVE_OIDC_PROXY_URL: ""
+      SSL_CERT_FILE: /run/secrets/tls_cert
+    secrets: [db_app_password, redis_password, webhook_secret, oidc_client_secret, tls_cert]

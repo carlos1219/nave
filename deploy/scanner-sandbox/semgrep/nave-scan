@@ -1,0 +1,37 @@
+#!/bin/sh
+# Envoltorio de Semgrep. Los flags viven aquí, versionados junto al binario fijado por
+# digest, y no dependen de nada que llegue en la petición (AM-402, AM-503).
+# - Directorio de trabajo: raíz del volumen, fuera del árbol del repositorio (`repo`).
+# - Reglas: solo las de la plataforma (/rules). Nunca configuración del repositorio.
+# - --x-ignore-semgrepignore-files: un .semgrepignore del repositorio no puede ocultar
+#   hallazgos (verificado con Semgrep 1.180.0, tests/contract/test_scanner_ignores_repo_config).
+# - --no-git-ignore: un .gitignore tampoco.
+# - --disable-nosem: un comentario `# nosemgrep` del código no suprime hallazgos; los falsos
+#   positivos se marcan en NAVE (triage auditado, CLAUDE.md §7), no en el repositorio.
+# - Ficheros mayores que MAX_TARGET_BYTES: Semgrep los omite sin avisar; nave_oversized.py
+#   añade un resultado por cada uno al SARIF (F7-02, ADR 0024).
+set -eu
+case "${NAVE_SCAN_TIMEOUT_SECONDS:-}" in
+    ''|*[!0-9]*) echo "invalid timeout" >&2; exit 64 ;;
+esac
+MAX_TARGET_BYTES=2000000
+SARIF=/tmp/semgrep.sarif
+cd /workspace
+timeout "${NAVE_SCAN_TIMEOUT_SECONDS}" semgrep scan \
+    --config /rules \
+    --sarif \
+    --quiet \
+    --metrics=off \
+    --disable-version-check \
+    --no-git-ignore \
+    --no-rewrite-rule-ids \
+    --disable-nosem \
+    --x-ignore-semgrepignore-files \
+    --timeout 30 \
+    --timeout-threshold 3 \
+    --max-target-bytes "${MAX_TARGET_BYTES}" \
+    --jobs 2 \
+    --max-memory 1500 \
+    --output "${SARIF}" \
+    repo
+exec python3 -I /usr/local/lib/nave/nave_oversized.py "${SARIF}" /workspace/repo "${MAX_TARGET_BYTES}"

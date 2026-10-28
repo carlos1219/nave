@@ -1,0 +1,133 @@
+/* Sistema visual de NAVE (CLAUDE.md §13, ADR 0023 y 0027). Los colores solo se declaran aquí:
+   el resto de la hoja usa estos tokens. Tema claro por defecto y oscuro según el sistema. */
+:root {
+  color-scheme: light dark;
+
+  --bg: #eef1f4;
+  --surface: #ffffff;
+  --surface-2: #f6f8fa;
+  --surface-hover: #f0f4f7;
+  --line: #dde2e8;
+  --line-strong: #c4ccd6;
+  --text: #121a26;
+  --text-2: #3f4a5a;
+  --text-3: #5b6676;
+
+  --accent: #0b6487;
+  --accent-hover: #084e6a;
+  --accent-text: #ffffff;
+  --accent-soft: #e3f0f5;
+  --focus: #0b6487;
+
+  --ok: #0f6b3e;
+  --ok-bg: #e5f4ec;
+  --warn: #7f5200;
+  --warn-bg: #fcf1d8;
+  --danger: #b0232a;
+  --danger-bg: #fbeaea;
+
+  --sev-critical: #a8141d;
+  --sev-critical-bg: #fbe9ea;
+  --sev-critical-dot: #d1242f;
+  --sev-high: #9c390b;
+  --sev-high-bg: #fdeee4;
+  --sev-high-dot: #e8590c;
+  --sev-medium: #7a5300;
+  --sev-medium-bg: #fdf3d6;
+  --sev-medium-dot: #d4a017;
+  --sev-low: #2f4fa8;
+  --sev-low-bg: #ebeffb;
+  --sev-low-dot: #5b7bd5;
+  --sev-info: #4a5565;
+  --sev-info-bg: #eef0f3;
+  --sev-info-dot: #9aa3af;
+
+  --log-bg: #0e1621;
+  --log-line: #1c2735;
+  --log-text: #d5dde8;
+  --log-muted: #8a99ab;
+  --log-warn: #f2c55c;
+  --log-error: #ff9ea6;
+  --log-error-bg: #2a1519;
+
+  --font-ui: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Cascadia Mono", "JetBrains Mono", "SF Mono", "SFMono-Regular", Menlo, Consolas, ui-monospace, monospace;
+
+  --radius: 8px;
+  --radius-sm: 4px;
+  --radius-pill: 999px;
+  --border: 1px solid var(--line);
+  --shadow-sm: 0 1px 2px rgba(18, 26, 38, 0.06);
+  --shadow-md: 0 16px 40px rgba(18, 26, 38, 0.22);
+  --backdrop: rgba(14, 22, 33, 0.5);
+
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 8px;
+  --space-4: 12px;
+  --space-5: 16px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 48px;
+
+  --fs-xs: 12px;
+  --fs-sm: 13px;
+  --fs-md: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 20px;
+  --fs-2xl: 26px;
+  --control-h: 32px;
+  --header-h: 52px;
+  --page-w: 1360px;
+  --sidebar-w: 236px;
+  --sidebar-w-collapsed: 60px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0c1117;
+    --surface: #131a22;
+    --surface-2: #18212b;
+    --surface-hover: #1c2631;
+    --line: #253040;
+    --line-strong: #364457;
+    --text: #e6ebf1;
+    --text-2: #a9b4c2;
+    --text-3: #8b98a8;
+
+    --accent: #5cb8dc;
+    --accent-hover: #86cbe6;
+    --accent-text: #06202b;
+    --accent-soft: #10303d;
+    --focus: #86cbe6;
+
+    --ok: #5fd39a;
+    --ok-bg: #0f2c1f;
+    --warn: #f0c35a;
+    --warn-bg: #33270c;
+    --danger: #ff8a8f;
+    --danger-bg: #3a171a;
+
+    --sev-critical: #ffa3a8;
+    --sev-critical-bg: #3b1519;
+    --sev-critical-dot: #f2545b;
+    --sev-high: #fdb48a;
+    --sev-high-bg: #3a2013;
+    --sev-high-dot: #f47a3a;
+    --sev-medium: #f3d27a;
+    --sev-medium-bg: #33280c;
+    --sev-medium-dot: #e0b02a;
+    --sev-low: #a9bcf5;
+    --sev-low-bg: #18234a;
+    --sev-low-dot: #7b97ea;
+    --sev-info: #b8c1cd;
+    --sev-info-bg: #212a35;
+    --sev-info-dot: #7b8695;
+
+    --log-bg: #080c11;
+    --log-line: #151d27;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
+    --shadow-md: 0 16px 40px rgba(0, 0, 0, 0.65);
+    --backdrop: rgba(0, 0, 0, 0.62);
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "realm": "nave",
+  "enabled": true,
+  "sslRequired": "all",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "clients": [
+    {
+      "clientId": "nave",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "dev-only-secret-not-for-production",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["https://localhost/api/v1/auth/callback"],
+      "webOrigins": [],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "https://localhost/"
+      },
+      "defaultClientScopes": ["openid", "profile", "email"]
+    }
+  ],
+  "users": [
+    {
+      "username": "dev",
+      "enabled": true,
+      "email": "dev@example.invalid",
+      "emailVerified": true,
+      "firstName": "Dev",
+      "lastName": "Local",
+      "credentials": [{"type": "password", "value": "dev", "temporary": false}]
+    }
+  ]
+}

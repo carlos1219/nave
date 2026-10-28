@@ -39,6 +39,8 @@ Estado: *Corregido* (con test de regresión), *Abierto*, *Aceptado* (con justifi
 | F7-28 | C9 imágenes base | Bajo | Restan CVE HIGH en paquetes del sistema base: `libbrotli1` (Debian, imagen frontend) y `brotli-libs`/`libexpat` + binario `trivy` (Alpine, imagen Trivy) | Aceptado (RR-33): se resuelve al refrescar los digests con `pin_images.py`; `--ignore-unfixed` ya los filtra si no hay parche |
 | F7-29 | C10 logs | **Medio** | El log de acceso de gunicorn (`--access-logformat` con `%(U)s`) escribía la ruta decodificada tal cual: `/api/v1/foo%0aINJECTED` generaba una línea de log falsa y un secreto en la ruta salía sin redactar (Nginx sí escapaba). Comprobado en vivo | Corregido: `AccessLogger` propio (`--logger-class`) que escapa control, comillas y barra invertida y redacta; test y comprobación en vivo tras reconstruir |
 | F7-31 | C11 plataforma | **Alto** | Un administrador de plataforma podía darse a sí mismo ADMIN en cualquier organización (`PUT /platform/users/{propio}/memberships/{org}`) y leer hallazgos y audit log, aunque el ADR 0030 dice que el rol «no da acceso a datos de ninguna organización». Reproducido en vivo: 204 y luego 200 en el audit log de demo-corp | Corregido: 403 y `access.denied` (`reason=self`) auditado; tests y repetición en vivo. Residual RR-34 |
+| F7-32 | C12 escaneo real | **Bloqueante** | El worker pedía por defecto hasta 256 MiB de salida de escáner (`NAVE_SCANNER_MAX_OUTPUT_BYTES`) y el runner solo admite 64 MiB (`NAVE_RUNNER_MAX_OUTPUT_BYTES`): **toda petición de escaneo real se rechazaba con 400** y el runner ni siquiera lo registraba. Los tests usaban límites propios y no lo veían | Corregido: valor por defecto del worker en 64 MiB, test cruzado de valores por defecto, el runner registra cada rechazo (solo la regla incumplida) |
+| F7-33 | C12 escaneo real | **Alto** | El envoltorio de Trivy copiaba la base de datos de vulnerabilidades (1,5 GB) al tmpfs de 1 GiB del escaneo: `No space left on device` en todo escaneo de Trivy. Además el script `update_trivy_db.py` descargaba en un `/tmp` de 256 MB y fallaba igual | Corregido: la base de datos se enlaza en solo lectura (sin copia, ahorra 1,5 GB de RAM por escaneo) y la descarga usa el propio volumen como temporal; tests |
 | F7-30 | C10 logs | Bajo | Huecos de la redacción: un JWT suelto y el valor de una cookie de sesión no se redactaban; el mensaje se recortaba a 2000 caracteres *antes* de redactar (el principio de un secreto cortado pasaba); un token `ghs_` pegado a una palabra no coincidía por el `\b` | Corregido: dos patrones nuevos, se redacta antes del recorte final y se quita el `\b`; tests de regresión |
 | F7-12 | C5 auth | Bajo | Cada `GET /auth/login` anónimo escribe un flujo en la base de datos (caduca a los 10 min) con tope de 10 000 vivos; el limitador es por proceso de gunicorn (efectivo ×4: 40 inicios en ráfaga por IP, medido). Con unas 13 IP sostenidas se llena la tabla y el login responde 503 a todos hasta que caducan; las sesiones ya abiertas no se ven afectadas | Aceptado (RR-28) |
 | F7-13 | C5 auth / despliegue | Medio | El login se limita por IP, pero con Docker Desktop (y, según el controlador de puertos, con motor rootless o un balanceador sin `real_ip`) todos los clientes llegan con la misma IP: comparten un único cubo de login. Verificado en dev: toda la actividad aparece como `172.19.0.1`. No estaba documentado como requisito de despliegue | Corregido en documentación (`despliegue.md` §6 punto 9); pendiente de verificar en producción |
@@ -516,3 +518,32 @@ Revisión delta del 2026-10-28 sobre lo añadido con el rediseño de la interfaz
 - Mitigaciones verificadas: autorización en cada caso de uso (404 para no miembros y no administradores de plataforma, 403 por rol), CSRF en escrituras, neutralización de fórmulas, filtros restringidos a la organización en la consulta, sesiones solo del propio usuario, prohibición de autoasignarse roles.
 - Residual: un administrador de plataforma puede dar un rol a otra cuenta que controle (RR-34); queda auditado en la organización afectada.
 - Las sondas dejaron en el audit log de demo-corp 3 entradas `membership.changed` (`via=platform`, antes de la corrección) y 1 `access.denied` (`reason=self`); el audit log es inmutable. Los usuarios, sesiones y el hallazgo de prueba se retiraron.
+
+## C12 — Escaneo real con una GitHub App (2026-10-28)
+
+Prueba de extremo a extremo con GitHub real, sin coste: GitHub App `nave-dev-carlos1219` creada por el flujo de manifiesto (permisos `contents:read`, `metadata:read`, `checks:write`, `pull_requests:write`, `security_events:write`; eventos `push` y `pull_request`), instalada **solo** en el repositorio privado de prueba `carlos1219/nave-prueba`, con los webhooks entrando por un túnel rápido de Cloudflare hacia el Nginx local.
+
+### Resultado
+
+| Paso | Resultado |
+|---|---|
+| Webhook sin firma por el túnel | 401 |
+| Evento de instalación firmado | 202; organización `carlos1219` creada y repositorio sincronizado desde la API de GitHub a través del proxy de salida |
+| PR con código vulnerable (`eval`, `subprocess` con `shell=True`, `pickle.loads`) y dependencias antiguas | Primeros intentos fallidos: F7-32 y F7-33. Tras corregirlos: escaneo `COMPLETED` en 13 s |
+| Hallazgos | Semgrep 3 (2 HIGH, 1 MEDIUM) y Trivy 20 (2 CRITICAL, 8 HIGH, 10 MEDIUM) |
+| Informe en GitHub | Check run «NAVE» y comentario en la PR con el veredicto y los hallazgos nuevos |
+| Salida a Internet | Solo `api.github.com` (68 conexiones) y `github.com` (12) a través de `egress-proxy` |
+
+Los dos fallos encontrados (F7-32 bloqueante, F7-33 alto) impedían cualquier escaneo real y no los detectaba ninguna suite: es exactamente el tipo de problema que esta prueba debía sacar a la luz.
+
+### Observaciones
+
+- **Veredicto NEUTRAL con 2 CRITICAL:** la organización no tiene política de quality gates y sin política el resultado es informativo. Para que una PR falle hay que publicar una política (vista de gobierno, ADR 0030). Conviene decidir si una organización nueva debe recibir una política por defecto.
+- **Doble escaneo:** un `push` a la rama de una PR abierta genera dos escaneos del mismo commit (rama y `refs/pull/N/head`).
+- **SARIF a Code Scanning:** en un repositorio privado sin GitHub Code Security la subida no está disponible; no se verificó.
+- La primera clave privada de la App (la del manifiesto) se perdió sin salir de la máquina cuando falló su escritura; sigue registrada en GitHub y conviene borrarla desde la página de la App.
+
+### Nota de superficie de ataque
+
+- El túnel expuso la API local a Internet durante la prueba; el webhook exigió firma y el resto exige sesión. Se cerró al terminar.
+- Los secretos de la App (clave privada y secreto del webhook) no pasaron por formularios ni por el chat: la clave se movió de Descargas a `deploy/secrets` y se borró la copia; el secreto se fijó por la API con el JWT de la App.

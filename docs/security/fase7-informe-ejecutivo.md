@@ -13,7 +13,7 @@ ha resistido la revisión. Lo que faltaba era que varias piezas funcionaran de v
 extremo a extremo: antes de esta fase **ningún escaneo podía terminar** y parte de la
 cadena de suministro no existía. Eso está corregido y probado.
 
-Quedan cuatro condiciones para el paso a producción (ver «Antes de producción»), ninguna
+Quedan tres condiciones para el paso a producción (ver «Antes de producción»), ninguna
 de las cuales exige cambiar el diseño.
 
 ## Qué se revisó
@@ -28,15 +28,15 @@ siempre que fue posible, y cada corrección lleva un test de regresión.
 
 ## Resultados
 
-31 hallazgos (F7-01 a F7-31):
+33 hallazgos (F7-01 a F7-33):
 
 | Severidad | Nº | Corregidos | Parciales | Aceptados con justificación |
 |---|---|---|---|---|
-| Bloqueante | 1 | 1 | — | — |
-| Alto | 5 | 5 | — | — |
+| Bloqueante | 2 | 2 | — | — |
+| Alto | 6 | 6 | — | — |
 | Medio | 11 | 8 | 2 | 1 |
 | Bajo | 14 | 4 | 1 | 9 |
-| **Total** | **31** | **18** | **3** | **10** |
+| **Total** | **33** | **20** | **3** | **10** |
 
 «Parciales»: F7-04 (falta el contrato de aislamiento de Trivy en CI), F7-13 (documentado;
 pendiente de comprobar en producción) y F7-18 (Redis endurecido, pero un solo usuario para
@@ -51,6 +51,8 @@ todos los servicios).
 | F7-02 (Alto) | Semgrep omitía en silencio los ficheros de más de 2 MB | Quien controla un repositorio podía esconder código vulnerable al quality gate rellenando el fichero |
 | F7-15 (Alto) | Con un escaneo activo en una rama, cualquier escaneo nuevo de esa rama fallaba | Commits sin escanear y errores 404 a usuarios autorizados |
 | F7-24 (Alto) | La imagen de producción del proxy de salida no existía ni se publicaba | El control de salida a Internet no podía desplegarse |
+| F7-32 (Bloqueante) | El worker pedía más salida de escáner de la que admite el runner | Ningún escaneo real podía completarse; lo destapó la prueba con GitHub real |
+| F7-33 (Alto) | La base de datos de Trivy (1,5 GB) se copiaba a un tmpfs de 1 GiB | Trivy fallaba en todo escaneo real: sin análisis de dependencias ni secretos |
 | F7-31 (Alto) | Un administrador de plataforma podía darse ADMIN en cualquier organización | El rol pensado solo para administrar la instalación daba acceso a todos los hallazgos y auditorías |
 | F7-14 (Medio) | Dos administradores podían retirarse mutuamente a la vez | Organización sin administrador en 4 de 5 intentos medidos |
 | F7-22, F7-25, F7-27 (Medio) | Lockfile del frontend sin hashes en 264 de 301 paquetes, CI que no construía nada con digests fijos, dependencias con CVE críticos | Cadena de suministro no verificable |
@@ -79,16 +81,13 @@ Ninguno es alto. Los más relevantes:
 
 ## Antes de producción
 
-1. **Escaneo real con una GitHub App** de extremo a extremo (webhook → escaneo → Checks,
-   SARIF y comentario en el PR). Es la única ruta crítica que no se ha podido probar con
-   GitHub real.
-2. **Despliegue en el host de producción con motor rootless y gVisor** (RR-20): en
+1. **Despliegue en el host de producción con motor rootless y gVisor** (RR-20): en
    desarrollo (Docker Desktop) el aislamiento de escaneos no es un límite de seguridad.
-3. **Primera ejecución real de CI y del workflow de publicación**: firma con cosign, SBOM,
+2. **Primera ejecución real de CI y del workflow de publicación**: firma con cosign, SBOM,
    autoescaneo y construcción de las siete imágenes solo se han reproducido en local.
    Revisar también los errores de tipado de los tests (`mypy` sobre `tests`) observados en
    el entorno local.
-4. **Comprobar la IP real del cliente** tras Nginx (RR-29) y programar la actualización de
+3. **Comprobar la IP real del cliente** tras Nginx (RR-29) y programar la actualización de
    la base de datos de Trivy (RR-15).
 
 ## Estado de la verificación
@@ -100,5 +99,11 @@ con 0 hallazgos; 10 de 10 acciones de CI fijadas por SHA verificadas contra GitH
 imágenes propias construidas con digests fijos, sin vulnerabilidades corregibles salvo las
 de RR-33. Revisión delta: 27 comprobaciones en vivo sobre las rutas nuevas, todas
 conformes tras corregir F7-31.
+
+**Escaneo real con GitHub (hecho el 2026-10-28):** GitHub App propia instalada en un
+repositorio privado de prueba, webhooks por túnel. Tras corregir F7-32 y F7-33, una PR con
+código vulnerable produjo un escaneo completo en 13 s (23 hallazgos de Semgrep y Trivy),
+un check y un comentario en la PR, con salida a Internet solo hacia GitHub. Queda sin
+verificar la subida de SARIF a Code Scanning (no disponible en repos privados gratuitos).
 
 No verificado: lo enumerado en «Antes de producción».

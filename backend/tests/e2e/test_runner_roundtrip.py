@@ -7,7 +7,7 @@ interoperan de extremo a extremo por HTTP real, con un motor de contenedores sim
 import base64
 import threading
 from collections.abc import Iterator
-from contextlib import contextmanager
+from contextlib import AbstractContextManager, contextmanager
 from datetime import timedelta
 
 import pytest
@@ -152,7 +152,7 @@ REPO = RepoRef("acme", "app")
 SHA = CommitSha("c" * 40)
 
 
-def checkout(world: World, key_hex: str = KEY_HEX):
+def checkout(world: World, key_hex: str = KEY_HEX) -> AbstractContextManager[WorkspaceHandle]:
     fetcher = RunnerRepositoryFetcher(client=world.client(key_hex), tokens=Tokens())
     return fetcher.checkout(installation_id=1, repo=REPO, commit=SHA, limits=FETCH_LIMITS)
 

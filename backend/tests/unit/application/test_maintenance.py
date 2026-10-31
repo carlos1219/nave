@@ -47,7 +47,8 @@ class FakeOutbox:
 
 class Sink:
     def __init__(self, error: Exception | None = None) -> None:
-        self.error, self.received = error, []
+        self.error = error
+        self.received: list[list[int]] = []
 
     def deliver(self, messages: Sequence[OutboxMessage]) -> None:
         if self.error:
@@ -188,7 +189,7 @@ class TestSweepQueuedScans:
             raise QueueUnavailableError
 
         original = h.queue.enqueue
-        h.queue.enqueue = full  # type: ignore[method-assign]
+        h.queue.enqueue = full  # type: ignore[method-assign, assignment]
         sweep, store = sweeper(h)
         report = sweep.execute()
         assert (report.requeued, report.skipped) == (0, 1)

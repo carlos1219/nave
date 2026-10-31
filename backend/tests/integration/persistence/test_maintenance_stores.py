@@ -131,7 +131,9 @@ class TestOutboxStore:
         assert store.relay_batch(10, got.append) == 2
         assert store.relay_batch(10, got.append) == 0
         with app_engine.connect() as conn:
-            published = conn.execute(select(t.outbox_events.c.published_at)).scalars().all()
+            published: Sequence[object] = (
+                conn.execute(select(t.outbox_events.c.published_at)).scalars().all()
+            )
         assert set(published) == {NOW}
 
     def test_messages_carry_the_stored_type_payload_and_time(self, app_engine: Engine) -> None:
@@ -212,7 +214,9 @@ class TestSweepStore:
         store.mark_requeued(queued, at(20))
         store.mark_requeued(running, at(20))
         with app_engine.connect() as conn:
-            marks = dict(conn.execute(select(t.scans.c.id, t.scans.c.requeued_at)).all())
+            marks: dict[object, object] = dict(
+                conn.execute(select(t.scans.c.id, t.scans.c.requeued_at)).all()
+            )
         assert marks[queued.value] == at(20)
         assert marks[running.value] is None
         assert store.queued_before(at(60), 10)[0].requeued_at == at(20)
@@ -263,7 +267,9 @@ class TestRetentionSimpleTables:
         put_outbox(app_engine, 3, published=None)
         assert SqlRetentionStore(maintenance_engine).purge_published_outbox(at(100), 10) == 1
         with app_engine.connect() as conn:
-            left = conn.execute(select(t.outbox_events.c.payload["n"].as_integer())).scalars().all()
+            left: Sequence[int] = (
+                conn.execute(select(t.outbox_events.c.payload["n"].as_integer())).scalars().all()
+            )
         assert sorted(left) == [2, 3]
 
 

@@ -148,7 +148,7 @@ class TestPrivileges:
             conn.execute(text("SET LOCAL ROLE nave_app"))
             conn.execute(text("SELECT public.nave_scrub_orphan_users(now(), 10)"))
         with engine.connect() as conn:
-            allowed = conn.execute(
+            allowed: bool = conn.execute(
                 text(
                     "SELECT has_function_privilege('public', "
                     "'nave_scrub_orphan_users(timestamptz, integer)', 'EXECUTE')"
@@ -158,7 +158,7 @@ class TestPrivileges:
 
     def test_the_function_pins_its_search_path(self, engine: Engine) -> None:
         with engine.connect() as conn:
-            config = conn.execute(
+            config: list[str] = conn.execute(
                 text("SELECT proconfig FROM pg_proc WHERE proname = 'nave_scrub_orphan_users'")
             ).scalar_one()
         assert any(str(c).startswith("search_path=") for c in config)

@@ -48,7 +48,7 @@ def test_every_flask_route_is_documented_and_every_documented_route_exists() -> 
     for rule in t.app.url_map.iter_rules():
         if not rule.rule.startswith("/api/v1") or rule.rule in UNDOCUMENTED:
             continue
-        for method in rule.methods - {"HEAD", "OPTIONS"}:
+        for method in (rule.methods or set()) - {"HEAD", "OPTIONS"}:
             flask_routes.add(
                 (method.lower(), re.sub(r"<(\w+)>", r"{\1}", rule.rule.removeprefix("/api/v1")))
             )

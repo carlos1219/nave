@@ -99,7 +99,7 @@ def test_unsupported_repositories_are_skipped_not_fatal() -> None:
         repo(2, name="bad name"),
         repo(3, branch="--upload-pack=x"),
         {"id": 4},
-        "junk",
+        "junk",  # type: ignore[list-item]
         repo(5, "ok"),
     ]
     assert [r.github_repo_id for r in s.directory.list_repositories(10)] == [1, 5]

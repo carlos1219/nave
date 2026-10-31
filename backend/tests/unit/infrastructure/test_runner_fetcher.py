@@ -1,10 +1,11 @@
 import json
 import logging
 from collections.abc import Iterator
-from contextlib import contextmanager
+from contextlib import AbstractContextManager, contextmanager
 
 import pytest
 
+from nave.application.dto.workspace import WorkspaceHandle
 from nave.application.errors import (
     FetchUnavailableError,
     RepositoryFetchError,
@@ -58,7 +59,7 @@ def make(
     )
 
 
-def checkout(fetcher: RunnerRepositoryFetcher):
+def checkout(fetcher: RunnerRepositoryFetcher) -> AbstractContextManager[WorkspaceHandle]:
     return fetcher.checkout(installation_id=7, repo=REPO, commit=SHA, limits=FETCH_LIMITS)
 
 

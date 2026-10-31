@@ -350,7 +350,7 @@ class TestInstallationEvents:
         def broken(_id: int) -> None:
             raise QueueUnavailableError("down")
 
-        world.sync.enqueue_sync = broken  # type: ignore[method-assign]
+        world.sync.enqueue_sync = broken  # type: ignore[method-assign, assignment]
         response = world.post({"installation": {"id": 31}}, event="installation")
         assert response.status_code == 503
         assert response.headers["Retry-After"] == "30"

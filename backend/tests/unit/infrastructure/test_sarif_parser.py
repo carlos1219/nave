@@ -1,4 +1,5 @@
 import json
+from typing import Any
 
 import pytest
 
@@ -119,7 +120,8 @@ def test_oversized_text_is_truncated_not_trusted() -> None:
 
 
 def test_junk_rule_entries_are_ignored() -> None:
-    data = s.document(["x", {"id": 5}, {"id": ""}, {"id": "ok", "properties": "no"}], [])
+    junk: list[Any] = ["x", {"id": 5}, {"id": ""}, {"id": "ok", "properties": "no"}]
+    data = s.document(junk, [])
     assert parse_sarif(data).results == ()
 
 

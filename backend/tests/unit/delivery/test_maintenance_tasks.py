@@ -63,7 +63,7 @@ def test_each_task_runs_its_use_case_once() -> None:
         d.purge_organizations,
         d.scrub_users,
     ):
-        assert stub.calls == 1  # type: ignore[attr-defined]
+        assert stub.calls == 1  # type: ignore[union-attr]
 
 
 @pytest.mark.parametrize(

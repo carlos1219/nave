@@ -101,10 +101,12 @@ def test_exceptions_log_type_and_frames_but_never_the_message_or_locals() -> Non
         secret_local = "hunter2"  # noqa: F841
         raise ValueError("connection string postgresql://u:hunter2@h/db")
 
+    record: logging.LogRecord | None = None
     try:
         fail()
     except ValueError:
         record = logging.LogRecord("t", logging.ERROR, __file__, 1, "boom", (), sys.exc_info())
+    assert record is not None
     out = JsonFormatter("nave-api").format(record)
     assert "hunter2" not in out
     assert json.loads(out)["exc_type"] == "ValueError"

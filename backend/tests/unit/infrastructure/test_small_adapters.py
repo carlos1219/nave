@@ -1,5 +1,4 @@
 import logging
-import uuid
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -20,7 +19,7 @@ def test_generated_ids_are_random_v4_uuids() -> None:
     ids = RandomIdGenerator()
     values = {ids.new_uuid() for _ in range(50)}
     assert len(values) == 50
-    assert all(isinstance(v, uuid.UUID) and v.version == 4 for v in values)
+    assert all(v.version == 4 for v in values)
 
 
 def test_the_quality_gate_evaluator_delegates_to_the_domain() -> None:

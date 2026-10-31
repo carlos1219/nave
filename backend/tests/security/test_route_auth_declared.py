@@ -43,7 +43,7 @@ def test_every_session_route_answers_401_without_a_cookie() -> None:
     for rule in t.app.url_map.iter_rules():
         if getattr(t.app.view_functions[rule.endpoint], AUTH_ATTRIBUTE, None) != "session":
             continue
-        for method in sorted(rule.methods - {"HEAD", "OPTIONS"}):
+        for method in sorted((rule.methods or set()) - {"HEAD", "OPTIONS"}):
             url = rule.rule
             response = client.open(url, method=method, base_url="https://nave.test")
             assert response.status_code == 401, (method, url)

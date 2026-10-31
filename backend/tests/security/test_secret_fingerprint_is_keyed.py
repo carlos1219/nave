@@ -10,6 +10,7 @@ from nave.application.services.fingerprinting import FingerprintKey, compute_fin
 from nave.application.services.normalizer import normalize_output
 from nave.domain.errors import InvalidValueError
 from nave.domain.value_objects.finding_category import FindingCategory
+from nave.domain.value_objects.fingerprint import Fingerprint
 from nave.domain.value_objects.rule_id import RuleId
 from nave.domain.value_objects.scanner_kind import ScannerKind
 from nave.domain.value_objects.severity import Severity
@@ -36,7 +37,9 @@ def secret_result(locator: str = LOCATOR) -> NormalizedResult:
     )
 
 
-def fingerprint(key: FingerprintKey | None, category: FindingCategory = FindingCategory.SECRET):
+def fingerprint(
+    key: FingerprintKey | None, category: FindingCategory = FindingCategory.SECRET
+) -> Fingerprint:
     return compute_fingerprint(
         scanner_kind=ScannerKind("trivy"),
         category=category,

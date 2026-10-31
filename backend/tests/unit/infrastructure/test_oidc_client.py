@@ -120,7 +120,7 @@ class TestDiscoveryIsNotTrusted:
                 return oidc_module.OidcResponse(200, body)
             return original(**kwargs)
 
-        s.client._transport = type("T", (), {"send": staticmethod(send)})()  # type: ignore[attr-defined]
+        s.client._transport = type("T", (), {"send": staticmethod(send)})()
         with pytest.raises(IdentityProviderUnavailableError):
             s.client.authorization_url(state="a", nonce="b", code_challenge="c")
 
@@ -284,7 +284,7 @@ class TestIdTokenValidation:
                 return oidc_module.OidcResponse(200, json.dumps({"keys": keys}).encode())
             return response
 
-        s.client._transport = type("T", (), {"send": staticmethod(send)})()  # type: ignore[attr-defined]
+        s.client._transport = type("T", (), {"send": staticmethod(send)})()
         with pytest.raises(IdentityProviderUnavailableError):
             s.complete()
 

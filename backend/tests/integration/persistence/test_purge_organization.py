@@ -1,6 +1,7 @@
 """RR-11: la purga la hace una función SQL; el rol de mantenimiento solo puede ejecutarla."""
 
 from datetime import UTC, datetime, timedelta
+from typing import Any
 from uuid import UUID
 
 import pytest
@@ -146,7 +147,7 @@ class TestFunction:
         populate(engine)
         uninstall(engine, ORG, 40)
         with engine.begin() as conn:
-            first = conn.execute(
+            first: dict[str, Any] = conn.execute(
                 text("SELECT public.nave_purge_organization(:o, 1)"), {"o": ORG.value}
             ).scalar_one()
         assert first["done"] is False
@@ -215,7 +216,7 @@ class TestPrivileges:
 
     def test_public_has_no_execute_privilege(self, engine: Engine) -> None:
         with engine.connect() as conn:
-            row = conn.execute(
+            row: bool = conn.execute(
                 text(
                     "SELECT has_function_privilege('public', "
                     "'nave_purge_organization(uuid, integer)', 'EXECUTE')"
@@ -225,10 +226,10 @@ class TestPrivileges:
 
     def test_the_function_pins_its_search_path(self, engine: Engine) -> None:
         with engine.connect() as conn:
-            config = conn.execute(
+            config: list[str] = conn.execute(
                 text("SELECT proconfig FROM pg_proc WHERE proname = 'nave_purge_organization'")
             ).scalar_one()
-            secdef = conn.execute(
+            secdef: bool = conn.execute(
                 text("SELECT prosecdef FROM pg_proc WHERE proname = 'nave_purge_organization'")
             ).scalar_one()
         assert secdef is True
@@ -239,7 +240,7 @@ class TestPrivileges:
         store = SqlOrganizationPurgeStore(engine)
         clock = FakeClock()
         with engine.connect() as conn:
-            now = conn.execute(text("SELECT now()")).scalar_one()
+            now: datetime = conn.execute(text("SELECT now()")).scalar_one()
         assert store.candidates(now - timedelta(days=30), 10) == []
         uninstall(engine, ORG, 31)
         uninstall(engine, OTHER_ORG, 10)

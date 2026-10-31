@@ -2,6 +2,9 @@ import base64
 import gzip
 import hashlib
 import json
+from typing import Any
+
+import pytest
 
 from nave.domain.value_objects.finding_category import FindingCategory
 from nave.domain.value_objects.severity import Severity
@@ -14,8 +17,9 @@ def noise(i: int) -> str:
     return "".join(hashlib.sha256(f"{i}-{j}".encode()).hexdigest() for j in range(10))
 
 
-def decode(encoded: str) -> dict:
-    return json.loads(gzip.decompress(base64.b64decode(encoded)))
+def decode(encoded: str) -> dict[str, Any]:
+    decoded: dict[str, Any] = json.loads(gzip.decompress(base64.b64decode(encoded)))
+    return decoded
 
 
 def test_empty_or_locationless_yields_none() -> None:
@@ -102,14 +106,14 @@ def test_output_is_deterministic_and_ordered_by_severity() -> None:
     assert decode(a.encoded)["runs"][0]["results"][0]["level"] == "error"
 
 
-def test_result_cap(monkeypatch) -> None:
+def test_result_cap(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(sarif_writer, "MAX_RESULTS", 2)
     payload = build_sarif_payload([make_view(i) for i in range(1, 6)])
     assert payload is not None
     assert (payload.included, payload.omitted) == (2, 3)
 
 
-def test_shrinks_until_it_fits(monkeypatch) -> None:
+def test_shrinks_until_it_fits(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(sarif_writer, "MAX_GZIP_BYTES", 6000)
     views = [make_view(i, message=noise(i), path=f"p{i}/f.py") for i in range(1, 60)]
     payload = build_sarif_payload(views)
@@ -119,6 +123,6 @@ def test_shrinks_until_it_fits(monkeypatch) -> None:
     assert len(base64.b64decode(payload.encoded)) <= 6000
 
 
-def test_nothing_fits_returns_none(monkeypatch) -> None:
+def test_nothing_fits_returns_none(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(sarif_writer, "MAX_GZIP_BYTES", 10)
     assert build_sarif_payload([make_view()]) is None

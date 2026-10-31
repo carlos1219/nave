@@ -53,8 +53,10 @@ class FakeConnection:
         self.closed = True
 
 
-def transport(connection: FakeConnection, **kwargs: Any) -> tuple[HttpOidcTransport, list[tuple]]:
-    made: list[tuple] = []
+def transport(
+    connection: FakeConnection, **kwargs: Any
+) -> tuple[HttpOidcTransport, list[tuple[Any, ...]]]:
+    made: list[tuple[Any, ...]] = []
 
     def factory(scheme: str, host: str, port: int, timeout: float) -> Any:
         made.append((scheme, host, port, timeout))

@@ -30,7 +30,8 @@ class FakeClient:
 
 class FakeControl:
     def __init__(self, error: Exception | None = None) -> None:
-        self.error, self.revoked = error, []
+        self.error = error
+        self.revoked: list[tuple[list[str], bool]] = []
 
     def revoke(self, ids: list[str], *, terminate: bool) -> None:
         if self.error:
@@ -62,7 +63,7 @@ class FakeApp:
 
 
 def queue(app: FakeApp, depth: int = 10) -> CeleryScanQueue:
-    return CeleryScanQueue(app, max_queue_depth=depth)  # type: ignore[arg-type]
+    return CeleryScanQueue(app, max_queue_depth=depth)
 
 
 def test_enqueue_sends_only_the_scan_id_with_a_deterministic_task_id() -> None:
@@ -131,7 +132,7 @@ def test_revoke_survives_a_broker_outage(caplog: pytest.LogCaptureFixture) -> No
 
 class TestInstallationSyncQueue:
     def make(self, app: FakeApp, depth: int = 10) -> CeleryInstallationSyncQueue:
-        return CeleryInstallationSyncQueue(app, max_queue_depth=depth)  # type: ignore[arg-type]
+        return CeleryInstallationSyncQueue(app, max_queue_depth=depth)
 
     def test_sends_only_the_installation_id(self) -> None:
         app = FakeApp()

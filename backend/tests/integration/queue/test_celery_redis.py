@@ -267,9 +267,11 @@ def test_a_real_worker_runs_a_scheduled_maintenance_task(
     register_maintenance_tasks(
         app,
         MaintenanceTaskDependencies(
-            relay_outbox=relay,  # type: ignore[arg-type]
+            relay_outbox=relay,
             sweep_scans=Recorder(),  # type: ignore[arg-type]
             purge_expired_data=Recorder(),  # type: ignore[arg-type]
+            purge_organizations=Recorder(),  # type: ignore[arg-type]
+            scrub_users=Recorder(),  # type: ignore[arg-type]
         ),
         limits=make_settings(clean_redis).maintenance,
     )

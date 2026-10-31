@@ -228,7 +228,7 @@ class TestFullFlowOnPostgres:
                 state=kit.oidc.urls[0]["state"], code="good", binding=started.binding
             )
         with engine.connect() as conn:
-            stored = conn.execute(select(t.sessions.c.token_hash)).scalar_one()
+            stored: bytes = conn.execute(select(t.sessions.c.token_hash)).scalar_one()
             assert bytes(stored) == hash_token(done.token)
             dump = "".join(str(r) for r in conn.execute(text("SELECT * FROM sessions")).all())
             assert done.token not in dump
@@ -253,11 +253,11 @@ class TestFullFlowOnPostgres:
             assert tx.memberships.role_of(newest.id, ORG) is Role.ADMIN
             assert tx.memberships.count_admins(ORG) == 1
         with engine.connect() as conn:
-            granted_by = conn.execute(
+            granted_by: object = conn.execute(
                 select(t.memberships.c.granted_by).where(t.memberships.c.user_id == newest.id.value)
             ).scalar_one()
             assert granted_by is None
-            action = conn.execute(
+            action: str = conn.execute(
                 select(t.audit_log.c.action).order_by(t.audit_log.c.id.desc()).limit(1)
             ).scalar_one()
             assert action == "membership.bootstrapped"

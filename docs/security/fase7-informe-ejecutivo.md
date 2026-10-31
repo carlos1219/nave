@@ -13,7 +13,7 @@ ha resistido la revisión. Lo que faltaba era que varias piezas funcionaran de v
 extremo a extremo: antes de esta fase **ningún escaneo podía terminar** y parte de la
 cadena de suministro no existía. Eso está corregido y probado.
 
-Quedan tres condiciones para el paso a producción (ver «Antes de producción»), ninguna
+Quedan dos condiciones para el paso a producción (ver «Antes de producción»), ninguna
 de las cuales exige cambiar el diseño.
 
 ## Qué se revisó
@@ -83,11 +83,7 @@ Ninguno es alto. Los más relevantes:
 
 1. **Despliegue en el host de producción con motor rootless y gVisor** (RR-20): en
    desarrollo (Docker Desktop) el aislamiento de escaneos no es un límite de seguridad.
-2. **Primera ejecución real de CI y del workflow de publicación**: firma con cosign, SBOM,
-   autoescaneo y construcción de las siete imágenes solo se han reproducido en local.
-   Revisar también los errores de tipado de los tests (`mypy` sobre `tests`) observados en
-   el entorno local.
-3. **Comprobar la IP real del cliente** tras Nginx (RR-29) y programar la actualización de
+2. **Comprobar la IP real del cliente** tras Nginx (RR-29) y programar la actualización de
    la base de datos de Trivy (RR-15).
 
 ## Estado de la verificación
@@ -107,3 +103,12 @@ un check y un comentario en la PR, con salida a Internet solo hacia GitHub. Qued
 verificar la subida de SARIF a Code Scanning (no disponible en repos privados gratuitos).
 
 No verificado: lo enumerado en «Antes de producción».
+
+**CI real en GitHub (hecho el 2026-10-31):** los seis jobs del workflow `ci` (backend con
+PostgreSQL real, frontend, sandbox y runner, despliegue, autoescaneo e imágenes) pasan en
+GitHub Actions en unos 4 minutos. Antes hubo que corregir los 50 errores de tipado de los
+tests, un test de integración roto, la instalación del runner en el job del backend, un
+`pip install` sin hashes que el propio `--require-hashes` rechazaba y la lista de acciones
+permitidas. Actions solo admite acciones de GitHub y una lista cerrada de terceros, todas
+fijadas por SHA. Sin verificar: el workflow `release` (firma con cosign, SBOM y publicación
+en GHCR), que solo se dispara con etiquetas `v*` y no se ha lanzado.

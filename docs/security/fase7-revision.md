@@ -547,3 +547,20 @@ Los dos fallos encontrados (F7-32 bloqueante, F7-33 alto) impedían cualquier es
 
 - El túnel expuso la API local a Internet durante la prueba; el webhook exigió firma y el resto exige sesión. Se cerró al terminar.
 - Los secretos de la App (clave privada y secreto del webhook) no pasaron por formularios ni por el chat: la clave se movió de Descargas a `deploy/secrets` y se borró la copia; el secreto se fijó por la API con el JWT de la App.
+
+## C13 — Primer CI real en GitHub Actions (2026-10-31)
+
+Repositorio privado `carlos1219/nave`, Actions limitado a acciones de GitHub y a una lista
+cerrada de terceros (`anchore/sbom-action`, `aquasecurity/setup-trivy`, `aquasecurity/trivy-action`,
+`docker/*`, `sigstore/cosign-installer`), con SHA completo obligatorio, token de workflow de solo
+lectura y sin ejecución desde forks.
+
+| Intento | Resultado | Causa y corrección |
+|---|---|---|
+| Local, antes de activar Actions | mypy fallaba con 50 errores en `tests/`; un test de integración de Celery/Redis construía `MaintenanceTaskDependencies` sin dos argumentos; el test e2e importaba el runner, que el job no instalaba | Tipos corregidos, test arreglado, `py.typed` en `nave-runner` e instalación del runner en el job del backend |
+| CI #1 | `deploy-static` y `self-scan` en rojo | `pip install --require-hashes -r ... pytest==9.1.1` mezclaba un paquete sin hash (pip lo rechaza): pytest pasa al lock con hashes y un test lo impide. `trivy-action` usa `aquasecurity/setup-trivy`, que faltaba en la lista permitida |
+| CI #2 | **Los 6 jobs en verde** (≈ 4 min) | — |
+
+Aviso pendiente: `docker/setup-buildx-action` apunta a Node 20 (obsoleto); lo actualizará Dependabot.
+No verificado: el workflow `release` (cosign, SBOM, GHCR).
+

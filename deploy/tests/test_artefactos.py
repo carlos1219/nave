@@ -335,6 +335,15 @@ def test_verificador_de_flags(root):
     assert "--metrics" in semgrep or "--sarif" in semgrep or semgrep
 
 
+def test_instalaciones_con_hashes_no_mezclan_paquetes_sueltos(root):
+    # En el primer CI real, `-r requirements-test.lock pytest==9.1.1` fallaba: con
+    # --require-hashes, pip rechaza cualquier paquete sin hash en la misma orden.
+    for workflow in (root / ".github/workflows").glob("*.yml"):
+        for line in workflow.read_text(encoding="utf-8").splitlines():
+            if "--require-hashes" in line:
+                assert not re.search(r"\s[A-Za-z0-9_.-]+==", line), f"{workflow.name}: {line.strip()}"
+
+
 def test_trivy_enlaza_la_base_de_datos_sin_copiarla(root):
     # F7-33: la base de datos supera el tmpfs del escaneo (1 GiB); copiarla rompía todo
     # escaneo de Trivy con «No space left on device».

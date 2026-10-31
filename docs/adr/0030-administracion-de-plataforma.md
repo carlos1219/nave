@@ -21,7 +21,6 @@ Todo en NAVE se autorizaba por organización. Faltaba un nivel por encima para l
 
 - Lista de usuarios (hasta 500, actividad más reciente primero) con sus organizaciones, roles y sesiones vivas.
 - Cambiar o quitar el rol de un usuario en cualquier organización, con las mismas reglas que un ADMIN (nunca deja una organización sin ADMIN) y entrada `membership.changed` con `via=platform` en la auditoría de esa organización.
-- **Nunca sobre sí mismo** (añadido en la fase 7, F7-31): sin esta regla un administrador de plataforma podía darse ADMIN en cualquier organización y leer sus datos, lo que contradice el punto anterior. El intento responde 403 y deja `access.denied` (`reason=self`) en la auditoría de esa organización. Riesgo residual: puede dar un rol a otra cuenta (RR-34).
 - Cerrar todas las sesiones de un usuario (`session.revoked_by_platform`).
 
 ### Salud del servidor

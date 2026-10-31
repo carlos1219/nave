@@ -10,6 +10,7 @@ from nave.domain.quality_gates import (
     QualityGatePolicy,
     ReasonKind,
     Verdict,
+    default_policy,
     evaluate_quality_gates,
 )
 from nave.domain.value_objects.severity import Severity as Sev
@@ -159,3 +160,19 @@ def test_invalid_policies_are_rejected(build: object) -> None:
 def test_parsers() -> None:
     assert GateScope.parse("new_findings") is GateScope.NEW_FINDINGS
     assert Verdict.parse("FAIL") is Verdict.FAIL
+
+
+@pytest.mark.parametrize("severity", [Sev.CRITICAL, Sev.HIGH])
+def test_default_policy_fails_on_new_critical_or_high(severity: Sev) -> None:
+    verdict = evaluate_quality_gates(default_policy(), [snap(severity, new=True)], NOW)
+    assert verdict.verdict is Verdict.FAIL
+
+
+def test_default_policy_passes_old_findings_and_lower_severities() -> None:
+    findings = [
+        snap(Sev.CRITICAL),
+        snap(Sev.HIGH),
+        snap(Sev.MEDIUM, new=True),
+        snap(Sev.LOW, new=True),
+    ]
+    assert evaluate_quality_gates(default_policy(), findings, NOW).verdict is Verdict.PASS

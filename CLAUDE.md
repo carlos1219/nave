@@ -430,5 +430,7 @@ Resueltas en fase 0 (detalle en `docs/adr/`):
 | Vistas de organización | Puerto de lectura `InsightsQueries`; endpoints `stats`, `scans`, `accepted-risks`, `rules`, `dependencies`, `policy` (VIEWER) y `audit-log` (ADMIN); gráficas SVG propias | 0028 |
 | Navegación y vistas de triage | Barra lateral colapsable con iconos funcionales; vistas de PR, cola de triage, escaneos fallidos, versiones de escáner (`ScanSummary.tools`), sesiones propias y exportación CSV/SARIF con neutralización de fórmulas | 0029 |
 | Administración de plataforma | Rol `platform_admins` concedido solo por CLI; gestor de usuarios, salud por latido del worker en PostgreSQL, contadores de webhooks por minuto; edición versionada de la política por ADMIN | 0030 |
+| Autoasignación de roles | El administrador de plataforma no puede dar, cambiar ni quitar su propia pertenencia (403 auditado) | 0031 |
+| Política por defecto | Cada organización nueva nace con la versión 1 «ningún CRITICAL ni HIGH nuevo»; la reinstalación conserva la que tuviera | 0032 |
 
 Abiertas: ninguna. Las nuevas se añaden aquí y se resuelven con un ADR antes de implementar.

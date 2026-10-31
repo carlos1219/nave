@@ -113,6 +113,27 @@ class QualityGatePolicy:
         return not self.gates and not self.sla_days
 
 
+DEFAULT_GATE_ID: Final = "no-new-critical-or-high"
+
+
+def default_policy() -> QualityGatePolicy:
+    """Política con la que nace una organización (ADR 0032): una PR no puede introducir
+    hallazgos CRITICAL ni HIGH. Sin ella el veredicto era siempre informativo (NEUTRAL)
+    hasta que un ADMIN publicara una política; ahora el estado seguro es el de partida."""
+    return QualityGatePolicy(
+        version=1,
+        gates=(
+            Gate(
+                id=DEFAULT_GATE_ID,
+                scope=GateScope.NEW_FINDINGS,
+                max_by_severity={Severity.CRITICAL: 0, Severity.HIGH: 0},
+            ),
+        ),
+        sla_days={},
+        fail_on_sla_breach=False,
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class FindingSnapshot:
     """Lo mínimo de un hallazgo que la política necesita, con el triage ya efectivo."""

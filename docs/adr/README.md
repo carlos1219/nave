@@ -33,5 +33,7 @@
 | 0028 | [Vistas de organización: estadísticas, actividad, reglas, riesgos, dependencias, política y auditoría](0028-vistas-de-organizacion.md) | Aceptado |
 | 0029 | [Barra lateral con iconos funcionales y vistas de triage: PR, cola, fallidos, escáneres, sesiones y exportación](0029-navegacion-lateral-y-vistas-de-triage.md) | Aceptado |
 | 0030 | [Administración de plataforma: usuarios, salud, webhooks y edición de la política](0030-administracion-de-plataforma.md) | Aceptado |
+| 0031 | [El administrador de plataforma no cambia su propia pertenencia](0031-administrador-de-plataforma-sin-autoasignacion.md) | Aceptado |
+| 0032 | [Política de quality gates por defecto para organizaciones nuevas](0032-politica-de-quality-gates-por-defecto.md) | Aceptado |
 
 Este índice se mantiene al día. Los ADRs aceptados no se editan: se sustituyen por otros nuevos.

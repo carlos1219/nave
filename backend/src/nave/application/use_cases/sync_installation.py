@@ -22,6 +22,7 @@ from nave.application.ports.installations import InstallationDirectoryPort
 from nave.application.ports.persistence import UnitOfWork, UnitOfWorkFactory
 from nave.application.ports.system import Clock, IdGenerator
 from nave.domain.entities.tenancy import Organization, OrganizationStatus, Repository
+from nave.domain.quality_gates import default_policy
 from nave.domain.value_objects.identifiers import OrganizationId, RepositoryId
 
 _ACTION_FOR_STATUS: Final = {
@@ -162,6 +163,13 @@ class SyncInstallation:
         )
         uow.tenant_admin.add_organization(org)
         self._audit(uow, org.id, "organization.registered", now)
+        # Solo en el alta: una reinstalación conserva la política que dejó su ADMIN.
+        version = uow.policies.publish(
+            org.id, default_policy(), policy_id=self._ids.new_uuid(), at=now
+        )
+        self._audit(
+            uow, org.id, "policy.defaulted", now, target_type="policy", target_id=str(version)
+        )
         return org, SyncOutcome.REGISTERED
 
     def _sync_repositories(

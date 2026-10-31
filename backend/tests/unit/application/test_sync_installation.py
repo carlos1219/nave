@@ -8,6 +8,7 @@ from nave.application.errors import TransientError
 from nave.application.use_cases.reconcile_installations import ReconcileInstallations
 from nave.application.use_cases.sync_installation import SyncInstallation, SyncInstallationCommand
 from nave.domain.entities.tenancy import OrganizationStatus
+from nave.domain.quality_gates import default_policy
 from nave.domain.value_objects.git_ref import GitRef
 from nave.domain.value_objects.repo_ref import RepoRef
 from tests.fakes.installations import FakeDirectory, FakeSyncQueue
@@ -75,7 +76,7 @@ class TestRegistration:
             ("api", True, "main"),
             ("web", True, "trunk"),
         ]
-        assert s.actions() == ["organization.registered"]
+        assert s.actions() == ["organization.registered", "policy.defaulted"]
 
     def test_account_outside_allowlist_registers_nothing(self) -> None:
         s = Setup(allowed=("other",))
@@ -113,7 +114,7 @@ class TestRegistration:
         assert s.sync() is SyncOutcome.UPDATED
         assert len(s.orgs) == 1
         assert len(s.repos) == 1
-        assert s.actions() == ["organization.registered"]
+        assert s.actions() == ["organization.registered", "policy.defaulted"]
 
 
 class TestRepositories:
@@ -181,6 +182,7 @@ class TestLifecycle:
         assert s.orgs[0].is_active
         assert s.actions() == [
             "organization.registered",
+            "policy.defaulted",
             "organization.suspended",
             "organization.activated",
         ]
@@ -214,6 +216,28 @@ class TestLifecycle:
         assert (org.id, org.github_installation_id, org.is_active) == (org_id, 20, True)
         assert org_id not in s.store.state.uninstalled_at
         assert s.repos[0].enabled is True
+
+    def test_new_organization_starts_with_the_default_policy(self) -> None:
+        # ADR 0032: sin política el veredicto era siempre NEUTRAL, aunque hubiera CRITICAL.
+        s = Setup()
+        s.directory.installations[10] = info()
+        s.sync()
+        record = s.store.state.policies[s.orgs[0].id]
+        assert (record.version, record.policy) == (1, default_policy())
+
+    def test_reinstall_keeps_the_policy_its_admin_left(self) -> None:
+        s = Setup()
+        s.directory.installations[10] = info(10)
+        s.sync(10)
+        org_id = s.orgs[0].id
+        custom = replace(default_policy(), fail_on_sla_breach=True)
+        s.store.state.policies[org_id] = replace(s.store.state.policies[org_id], policy=custom)
+        del s.directory.installations[10]
+        s.sync(10)
+        s.directory.installations[20] = info(20)
+        s.sync(20)
+        assert s.store.state.policies[org_id].policy == custom
+        assert s.actions().count("policy.defaulted") == 1
 
     def test_recycled_login_does_not_inherit_the_organization(self) -> None:
         s = Setup()

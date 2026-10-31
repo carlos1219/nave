@@ -91,18 +91,46 @@ def test_script_de_roles_solo_usa_secretos_de_postgres(root):
     assert script.count("NOSUPERUSER") == 3
 
 
-def test_redis_no_expone_la_contrasena(root):
+def _redis_acls(root):
     script = (root / "deploy/redis/entrypoint.sh").read_text(encoding="utf-8")
+    base = next(line for line in script.splitlines() if line.startswith("base="))
+    expanded = script.replace("${base}", base.split("=", 1)[1].strip('"'))
+    return script, {
+        line.split()[1]: line.split() for line in expanded.splitlines() if line.startswith("user ")
+    }
+
+
+def test_redis_no_expone_las_contrasenas(root):
+    script, _ = _redis_acls(root)
     assert "requirepass" not in script and " -a " not in script
-    assert "sha256sum" in script and "user default on #" in script
+    assert "sha256sum" in script
     assert 'save ""' in script and "appendonly no" in script
-    acl = next(line for line in script.splitlines() if line.startswith("user default "))
-    # F7-18: sin administración, sin vaciado masivo y sin funciones persistentes (FUNCTION).
-    denied = ("-@admin", "-function", "-fcall", "-fcall_ro", "-flushall", "-flushdb")
-    assert all(deny in acl.split() for deny in denied)
-    assert "nopass" not in acl and "on" in acl.split()
+
+
+def test_redis_un_usuario_por_servicio(root):
+    # RR-31: un componente comprometido solo puede lo que su servicio necesita.
+    _, acls = _redis_acls(root)
+    assert set(acls) == {"default", "health", "nave-api", "nave-scheduler", "nave-worker"}
+    assert "off" in acls["default"] and "-@all" in acls["default"]
+    assert acls["health"][-2:] == ["+ping", "+hello"] and not any(w.startswith(("~", "&")) for w in acls["health"])
+    for user in ("nave-api", "nave-scheduler", "nave-worker"):
+        assert "nopass" not in acls[user] and any(w.startswith("#") for w in acls[user])
+        assert "resetkeys" in acls[user] and "resetchannels" in acls[user]
+        assert "~*" not in acls[user] and "&*" not in acls[user]
+    for producer in ("nave-api", "nave-scheduler"):
+        words = acls[producer]
+        assert "-@all" in words and "+lpush" in words
+        for forbidden in ("+brpop", "+del", "+eval", "+evalsha", "+hset", "+@all", "+keys", "+flushall"):
+            assert forbidden not in words, (producer, forbidden)
+        assert "~unacked*" not in words and "~*pidbox*" not in words
+    assert not any(w.startswith("&") for w in acls["nave-scheduler"])
+    worker = acls["nave-worker"]
+    denied = ("-@admin", "-@dangerous", "-function", "-fcall", "-fcall_ro")
+    assert all(deny in worker for deny in denied)
     # El Lock de redis-py (mutex de kombu) libera con Lua: denegar el scripting tumba al worker.
-    assert "-@scripting" not in acl and "-eval" not in acl and "-evalsha" not in acl
+    assert "-@scripting" not in worker and "-eval" not in worker and "-evalsha" not in worker
+    # PSUBSCRIBE exige el patrón literal (F7-18 / RR-31).
+    assert "&/0.celeryev/worker.*" in worker and "&/0.celery.pidbox" in worker
 
 
 def test_allowlist_de_salida(root):

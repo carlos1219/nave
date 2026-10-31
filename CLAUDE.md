@@ -432,5 +432,6 @@ Resueltas en fase 0 (detalle en `docs/adr/`):
 | Administración de plataforma | Rol `platform_admins` concedido solo por CLI; gestor de usuarios, salud por latido del worker en PostgreSQL, contadores de webhooks por minuto; edición versionada de la política por ADMIN | 0030 |
 | Autoasignación de roles | El administrador de plataforma no puede dar, cambiar ni quitar su propia pertenencia (403 auditado) | 0031 |
 | Política por defecto | Cada organización nueva nace con la versión 1 «ningún CRITICAL ni HIGH nuevo»; la reinstalación conserva la que tuviera | 0032 |
+| Usuarios de Redis | Uno por servicio (`nave-api`, `nave-scheduler`, `nave-worker`) con comandos, claves y canales mínimos; `default` desactivado; `health` solo `PING` | 0033 |
 
 Abiertas: ninguna. Las nuevas se añaden aquí y se resuelven con un ADR antes de implementar.

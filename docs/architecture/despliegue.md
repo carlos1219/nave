@@ -56,13 +56,13 @@ flowchart TB
 | Servicio | Redes | Puerto al host | Secretos (Docker secrets) | Notas |
 |---|---|---|---|---|
 | `frontend` | edge | 443 (y 80 → redirección) | Certificado TLS | Estáticos de Vue + reverse proxy `/api/` |
-| `api` | edge, internal | — | `db_app_password`, `redis_password`, `webhook_secret`, `session_secret`, `oidc_client_secret` | **Sin** la clave de la GitHub App |
-| `worker` | internal, runner, egress | — | `db_app_password`, `db_maintenance_password`, `redis_password`, `github_app_private_key`, `runner_hmac_key`, `fingerprint_key` (HMAC de huellas de secretos, AM-805; `openssl rand -hex 32`) | Único que habla con GitHub y con el runner. Se lanza con pool `prefork` (los límites de tiempo no se aplican con `solo`) y `--max-tasks-per-child`. `db_maintenance_password` solo la usan las tareas de retención (ADR 0011) |
+| `api` | edge, internal | — | `db_app_password`, `redis_api_password`, `webhook_secret`, `session_secret`, `oidc_client_secret` | **Sin** la clave de la GitHub App |
+| `worker` | internal, runner, egress | — | `db_app_password`, `db_maintenance_password`, `redis_worker_password`, `github_app_private_key`, `runner_hmac_key`, `fingerprint_key` (HMAC de huellas de secretos, AM-805; `openssl rand -hex 32`) | Único que habla con GitHub y con el runner. Se lanza con pool `prefork` (los límites de tiempo no se aplican con `solo`) y `--max-tasks-per-child`. `db_maintenance_password` solo la usan las tareas de retención (ADR 0011) |
 | `postgres` | internal | — | `db_superuser_password` (solo init), `db_app_password`, `db_migrator_password` | Volumen `pgdata` |
-| `redis` | internal | — | `redis_password` | ACL; sin persistencia de negocio |
+| `redis` | internal | — | `redis_api_password`, `redis_worker_password`, `redis_scheduler_password` | Un usuario por servicio con lista mínima de comandos, claves y canales; `default` desactivado (ADR 0033); sin persistencia de negocio |
 | `scan-runner` | runner | — | `runner_hmac_key` | Socket del motor rootless (prod); ADR 0002 |
 | `egress-proxy` | egress | — | — | ADR 0007 |
-| `scheduler` | internal | — | `redis_password` | `celery beat`; solo encola tareas en `maintenance` (ADR 0008) |
+| `scheduler` | internal | — | `redis_scheduler_password` | `celery beat`; solo encola tareas en `maintenance` (ADR 0008) |
 
 Comunes a todos (§15): `read_only: true` con `tmpfs` donde haga falta, `cap_drop: [ALL]`, `security_opt: [no-new-privileges:true]`, usuario no root, `healthcheck`, límites de CPU y memoria, `restart: unless-stopped`, imagen fijada por digest.
 

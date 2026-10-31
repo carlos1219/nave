@@ -9,4 +9,4 @@ services:
     environment:
       NAVE_OIDC_PROXY_URL: ""
       SSL_CERT_FILE: /run/secrets/tls_cert
-    secrets: [db_app_password, redis_password, webhook_secret, oidc_client_secret, tls_cert]
+    secrets: [db_app_password, redis_api_password, webhook_secret, oidc_client_secret, tls_cert]

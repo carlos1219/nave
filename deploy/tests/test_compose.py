@@ -25,14 +25,14 @@ SECRETS = {
     "frontend": {"tls_cert", "tls_key"},
     "api": {
         "db_app_password",
-        "redis_password",
+        "redis_api_password",
         "webhook_secret",
         "oidc_client_secret",
     },
     "worker": {
         "db_app_password",
         "db_maintenance_password",
-        "redis_password",
+        "redis_worker_password",
         "github_app_private_key",
         "runner_hmac_key",
         "fingerprint_key",
@@ -43,10 +43,10 @@ SECRETS = {
         "db_migrator_password",
         "db_maintenance_password",
     },
-    "redis": {"redis_password"},
+    "redis": {"redis_api_password", "redis_worker_password", "redis_scheduler_password"},
     "scan-runner": {"runner_hmac_key"},
     "egress-proxy": set(),
-    "scheduler": {"redis_password"},
+    "scheduler": {"redis_scheduler_password"},
     "migrate": {"db_migrator_password"},
     "cli": {"db_app_password"},
 }
@@ -173,7 +173,7 @@ def test_ningun_secreto_en_el_entorno(services):
                 assert str(value).startswith("/run/secrets/"), f"{name}.{key}"
             assert "@" not in str(value).split("://", 1)[-1].split("/")[0].replace(
                 "@postgres", ""
-            ).replace("@egress-proxy", "") or "://" not in str(value), (
+            ).replace("@egress-proxy", "").replace("@redis", "") or "://" not in str(value), (
                 f"{name}.{key}: credenciales en una URL"
             )
 
@@ -277,3 +277,12 @@ def test_registro_de_gunicorn_sin_consulta(services):
     assert (
         "--logger-class=nave.infrastructure.observability.gunicorn_logger.AccessLogger" in command
     )
+
+
+def test_cada_servicio_usa_su_usuario_de_redis(services):
+    # RR-31: la URL nombra el usuario del servicio y el secreto es solo el suyo.
+    for name in ("api", "worker", "scheduler"):
+        env = services[name]["environment"]
+        assert env["NAVE_REDIS_URL"] == f"redis://nave-{name}@redis:6379/0"
+        assert env["NAVE_REDIS_PASSWORD_FILE"] == f"/run/secrets/redis_{name}_password"
+

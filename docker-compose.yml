@@ -18,8 +18,6 @@ x-hardened: &hardened
 
 x-backend-env: &backend-env
   NAVE_LOG_LEVEL: ${NAVE_LOG_LEVEL:-INFO}
-  NAVE_REDIS_URL: redis://redis:6379/0
-  NAVE_REDIS_PASSWORD_FILE: /run/secrets/redis_password
 
 services:
   frontend:
@@ -66,6 +64,8 @@ services:
       - nave.bootstrap.api:api_app()
     environment:
       <<: *backend-env
+      NAVE_REDIS_URL: redis://nave-api@redis:6379/0
+      NAVE_REDIS_PASSWORD_FILE: /run/secrets/redis_api_password
       NAVE_DATABASE_URL: postgresql+psycopg://nave_app@postgres:5432/nave
       NAVE_DATABASE_PASSWORD_FILE: /run/secrets/db_app_password
       NAVE_GITHUB_WEBHOOK_SECRET_FILE: /run/secrets/webhook_secret
@@ -77,7 +77,7 @@ services:
       NAVE_OIDC_PROXY_URL: ${NAVE_OIDC_PROXY_URL-http://egress-proxy:4750}
       NAVE_TRUSTED_PROXY_HOPS: "1"
     networks: [edge, internal, egress]
-    secrets: [db_app_password, redis_password, webhook_secret, oidc_client_secret]
+    secrets: [db_app_password, redis_api_password, webhook_secret, oidc_client_secret]
     tmpfs:
       - /tmp:size=32m,mode=1777
       - /dev/shm:size=64m
@@ -107,6 +107,8 @@ services:
       - -Ofair
     environment:
       <<: *backend-env
+      NAVE_REDIS_URL: redis://nave-worker@redis:6379/0
+      NAVE_REDIS_PASSWORD_FILE: /run/secrets/redis_worker_password
       NAVE_DATABASE_URL: postgresql+psycopg://nave_app@postgres:5432/nave
       NAVE_DATABASE_PASSWORD_FILE: /run/secrets/db_app_password
       NAVE_MAINTENANCE_DATABASE_URL: postgresql+psycopg://nave_maintenance@postgres:5432/nave
@@ -124,7 +126,7 @@ services:
     secrets:
       - db_app_password
       - db_maintenance_password
-      - redis_password
+      - redis_worker_password
       - github_app_private_key
       - runner_hmac_key
       - fingerprint_key
@@ -155,8 +157,10 @@ services:
       - --pidfile=/tmp/celerybeat.pid
     environment:
       <<: *backend-env
+      NAVE_REDIS_URL: redis://nave-scheduler@redis:6379/0
+      NAVE_REDIS_PASSWORD_FILE: /run/secrets/redis_scheduler_password
     networks: [internal]
-    secrets: [redis_password]
+    secrets: [redis_scheduler_password]
     tmpfs: ["/tmp:size=16m,mode=1777"]
     mem_limit: 256m
     cpus: 0.5
@@ -217,7 +221,7 @@ services:
     user: "999:999"
     entrypoint: ["sh", "/entrypoint.sh"]
     networks: [internal]
-    secrets: [redis_password]
+    secrets: [redis_api_password, redis_worker_password, redis_scheduler_password]
     volumes:
       - ./deploy/redis/entrypoint.sh:/entrypoint.sh:ro
     tmpfs: ["/tmp:size=16m,mode=1777"]
@@ -225,7 +229,7 @@ services:
     cpus: 1.0
     pids_limit: 64
     healthcheck:
-      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$(cat /run/secrets/redis_password)\" redis-cli ping | grep -q PONG"]
+      test: ["CMD-SHELL", "redis-cli --user health --pass health ping | grep -q PONG"]
       interval: 10s
       timeout: 3s
       retries: 5
@@ -369,7 +373,9 @@ secrets:
   db_app_password: {file: ./deploy/secrets/db_app_password}
   db_migrator_password: {file: ./deploy/secrets/db_migrator_password}
   db_maintenance_password: {file: ./deploy/secrets/db_maintenance_password}
-  redis_password: {file: ./deploy/secrets/redis_password}
+  redis_api_password: {file: ./deploy/secrets/redis_api_password}
+  redis_worker_password: {file: ./deploy/secrets/redis_worker_password}
+  redis_scheduler_password: {file: ./deploy/secrets/redis_scheduler_password}
   webhook_secret: {file: ./deploy/secrets/webhook_secret}
   oidc_client_secret: {file: ./deploy/secrets/oidc_client_secret}
   github_app_private_key: {file: ./deploy/secrets/github_app_private_key}

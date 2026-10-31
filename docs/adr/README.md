@@ -35,5 +35,6 @@
 | 0030 | [Administración de plataforma: usuarios, salud, webhooks y edición de la política](0030-administracion-de-plataforma.md) | Aceptado |
 | 0031 | [El administrador de plataforma no cambia su propia pertenencia](0031-administrador-de-plataforma-sin-autoasignacion.md) | Aceptado |
 | 0032 | [Política de quality gates por defecto para organizaciones nuevas](0032-politica-de-quality-gates-por-defecto.md) | Aceptado |
+| 0033 | [Un usuario de Redis por servicio](0033-usuarios-de-redis-por-servicio.md) | Aceptado |
 
 Este índice se mantiene al día. Los ADRs aceptados no se editan: se sustituyen por otros nuevos.

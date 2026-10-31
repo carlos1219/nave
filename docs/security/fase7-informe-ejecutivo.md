@@ -112,3 +112,17 @@ tests, un test de integración roto, la instalación del runner en el job del ba
 permitidas. Actions solo admite acciones de GitHub y una lista cerrada de terceros, todas
 fijadas por SHA. Sin verificar: el workflow `release` (firma con cosign, SBOM y publicación
 en GHCR), que solo se dispara con etiquetas `v*` y no se ha lanzado.
+
+**Mejoras posteriores sin coste (2026-10-31):**
+
+- **Redis con un usuario por servicio** (ADR 0033, cierra RR-31): la API y el planificador
+  solo pueden encolar; ya no pueden consumir, borrar ni ejecutar Lua. Permisos obtenidos
+  observando el tráfico real y verificados con 0 denegaciones y pruebas negativas.
+- **Política de quality gates por defecto** (ADR 0032): una organización nueva bloquea
+  desde el primer escaneo las PR que introducen hallazgos CRITICAL o HIGH (antes salía
+  NEUTRAL).
+- **Contrato de aislamiento de escáneres en CI** (F7-04): las imágenes reales de Semgrep y
+  Trivy se prueban contra un repositorio que intenta desactivarlas con su propia
+  configuración; una mutación simulada lo hace fallar.
+- `docker/setup-buildx-action` actualizado a Node 24.
+

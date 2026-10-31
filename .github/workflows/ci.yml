@@ -141,7 +141,7 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           persist-credentials: false
-      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - name: Digests de las bases
         id: lock
         run: |
@@ -176,6 +176,8 @@ jobs:
           docker buildx build --load -t nave-semgrep:ci --build-arg PYTHON_IMAGE="$NAVE_PYTHON_IMAGE" \
             --build-arg SEMGREP_VERSION="$NAVE_SEMGREP_VERSION" deploy/scanner-sandbox/semgrep
           python deploy/scripts/check_scanner_flags.py nave-semgrep:ci deploy/scanner-sandbox/semgrep/nave-scan semgrep scan
+          # AM-503 / F7-04: la imagen real ignora la configuración del repositorio analizado.
+          python deploy/scripts/check_scanner_isolation.py nave-semgrep:ci semgrep
       - name: egress-proxy (compilado desde el módulo Go de la versión fijada)
         if: steps.lock.outputs.present == 'true'
         run: |
@@ -190,3 +192,7 @@ jobs:
         run: |
           docker buildx build --load -t nave-trivy:ci --build-arg TRIVY_IMAGE="$NAVE_TRIVY_BASE_IMAGE" deploy/scanner-sandbox/trivy
           python deploy/scripts/check_scanner_flags.py nave-trivy:ci deploy/scanner-sandbox/trivy/nave-scan trivy fs
+          # Base de datos con el mismo script que en producción (RR-15) y contrato AM-503 / F7-04.
+          NAVE_TRIVY_IMAGE="nave-trivy@$(docker image inspect nave-trivy:ci --format '{{.Id}}')" \
+            python deploy/scripts/update_trivy_db.py
+          python deploy/scripts/check_scanner_isolation.py nave-trivy:ci trivy --trivy-db-volume nave-trivy-db

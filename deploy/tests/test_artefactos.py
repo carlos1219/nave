@@ -344,6 +344,14 @@ def test_instalaciones_con_hashes_no_mezclan_paquetes_sueltos(root):
                 assert not re.search(r"\s[A-Za-z0-9_.-]+==", line), f"{workflow.name}: {line.strip()}"
 
 
+def test_ci_comprueba_que_los_escaneres_ignoran_la_configuracion_del_repo(root):
+    # F7-04: el contrato AM-503 corre contra las imágenes reales de Semgrep y Trivy.
+    ci = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    assert "check_scanner_isolation.py nave-semgrep:ci semgrep" in ci
+    assert "check_scanner_isolation.py nave-trivy:ci trivy --trivy-db-volume nave-trivy-db" in ci
+    assert ci.index("update_trivy_db.py") < ci.index("check_scanner_isolation.py nave-trivy:ci")
+
+
 def test_trivy_enlaza_la_base_de_datos_sin_copiarla(root):
     # F7-33: la base de datos supera el tmpfs del escaneo (1 GiB); copiarla rompía todo
     # escaneo de Trivy con «No space left on device».

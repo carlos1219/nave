@@ -15,7 +15,9 @@ import subprocess
 import sys
 
 VOLUME = "nave-trivy-db"
-IMAGE = re.compile(r"[a-z0-9][a-z0-9._/:-]{0,200}@sha256:[0-9a-f]{64}")
+# Imagen fijada por digest de registro o, para una imagen local recién construida (CI), su ID
+# de contenido `sha256:...`: igual de inmutable y no obliga a publicarla para usarla.
+IMAGE = re.compile(r"(?:[a-z0-9][a-z0-9._/:-]{0,200}@)?sha256:[0-9a-f]{64}")
 HARDENING = [
     "--rm",
     "--read-only",

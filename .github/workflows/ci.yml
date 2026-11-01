@@ -193,6 +193,6 @@ jobs:
           docker buildx build --load -t nave-trivy:ci --build-arg TRIVY_IMAGE="$NAVE_TRIVY_BASE_IMAGE" deploy/scanner-sandbox/trivy
           python deploy/scripts/check_scanner_flags.py nave-trivy:ci deploy/scanner-sandbox/trivy/nave-scan trivy fs
           # Base de datos con el mismo script que en producción (RR-15) y contrato AM-503 / F7-04.
-          NAVE_TRIVY_IMAGE="nave-trivy@$(docker image inspect nave-trivy:ci --format '{{.Id}}')" \
+          NAVE_TRIVY_IMAGE="$(docker image inspect nave-trivy:ci --format '{{.Id}}')" \
             python deploy/scripts/update_trivy_db.py
           python deploy/scripts/check_scanner_isolation.py nave-trivy:ci trivy --trivy-db-volume nave-trivy-db

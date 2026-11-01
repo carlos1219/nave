@@ -346,6 +346,9 @@ def test_actualizacion_de_la_bd_de_trivy(root):
     # La base de datos ya no cabe en el tmpfs de /tmp: los temporales van al volumen.
     assert command_has(fetch, "-e", "TMPDIR=/db")
     assert module.IMAGE.fullmatch(image) and not module.IMAGE.fullmatch("trivy:latest")
+    # Un ID local de contenido también vale (CI); una etiqueta mutable no.
+    assert module.IMAGE.fullmatch("sha256:" + "b" * 64)
+    assert not module.IMAGE.fullmatch("nave-trivy:ci")
 
 
 def command_has(command, flag, value):

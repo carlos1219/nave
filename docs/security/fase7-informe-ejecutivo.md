@@ -125,4 +125,7 @@ en GHCR), que solo se dispara con etiquetas `v*` y no se ha lanzado.
   Trivy se prueban contra un repositorio que intenta desactivarlas con su propia
   configuración; una mutación simulada lo hace fallar.
 - `docker/setup-buildx-action` actualizado a Node 24.
+- El contrato anterior destapó en su primera ejecución en CI otro fallo bloqueante (F7-34):
+  las imágenes de escáner construidas desde el repositorio no podían ejecutar su envoltorio
+  (`permission denied`), algo invisible en Windows. Corregido y verificado.
 

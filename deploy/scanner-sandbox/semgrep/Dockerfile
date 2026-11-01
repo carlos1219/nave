@@ -11,7 +11,8 @@ RUN test -n "${SEMGREP_VERSION}" \
     && test "$(semgrep --version)" = "${SEMGREP_VERSION}"
 COPY rules /rules
 COPY nave_oversized.py /usr/local/lib/nave/nave_oversized.py
-COPY nave-scan /usr/local/bin/nave-scan
+# --chmod: el modo no depende del checkout (en Windows git no guarda +x; F7-34).
+COPY --chmod=0555 nave-scan /usr/local/bin/nave-scan
 ENV SEMGREP_SEND_METRICS=off SEMGREP_ENABLE_VERSION_CHECK=0 PYTHONDONTWRITEBYTECODE=1
 USER 65532:65532
 ENTRYPOINT []

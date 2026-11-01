@@ -380,6 +380,14 @@ def test_ci_comprueba_que_los_escaneres_ignoran_la_configuracion_del_repo(root):
     assert ci.index("update_trivy_db.py") < ci.index("check_scanner_isolation.py nave-trivy:ci")
 
 
+def test_envoltorios_de_escaner_ejecutables_en_cualquier_checkout(root):
+    # F7-34: construida desde un checkout sin bit de ejecución (Windows), la imagen daba
+    # «permission denied» al lanzar nave-scan; el modo se fija en el propio Dockerfile.
+    for kind in ("semgrep", "trivy"):
+        dockerfile = (root / f"deploy/scanner-sandbox/{kind}/Dockerfile").read_text(encoding="utf-8")
+        assert "COPY --chmod=0555 nave-scan /usr/local/bin/nave-scan" in dockerfile, kind
+
+
 def test_trivy_enlaza_la_base_de_datos_sin_copiarla(root):
     # F7-33: la base de datos supera el tmpfs del escaneo (1 GiB); copiarla rompía todo
     # escaneo de Trivy con «No space left on device».

@@ -9,13 +9,13 @@ description = "NAVE — Nodo de Análisis y Verificación Estática (backend)"
 requires-python = ">=3.12,<3.13"
 # domain y application solo usan stdlib; estas son de infraestructura (README: justificación).
 dependencies = [
-    "alembic==1.20.0",
+    "alembic==1.20.1",
     "celery==5.6.3",
     "cryptography==50.0.2",
     "flask==3.1.3",
     "gunicorn==26.2.0",
-    "joserfc==1.7.5",
-    "pydantic==2.13.5",
+    "joserfc==1.7.7",
+    "pydantic==2.14.2",
     "psycopg[binary]==3.3.6",
     "redis==8.1.0",
     "sqlalchemy==2.1.6",
@@ -24,12 +24,12 @@ dependencies = [
 [project.optional-dependencies]
 # Versiones exactas; el lockfile con hashes es requirements-dev.lock.
 dev = [
-    "hypothesis==6.170.9",
+    "hypothesis==6.170.13",
     "import-linter==2.15",
-    "mypy==2.3.1",
-    "pytest==9.1.1",
+    "mypy==2.4.1",
+    "pytest==9.2.0",
     "pytest-cov==7.1.0",
-    "ruff==0.17.2",
+    "ruff==0.17.3",
 ]
 
 [tool.setuptools.packages.find]

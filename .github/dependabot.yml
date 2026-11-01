@@ -25,12 +25,22 @@ updates:
     versioning-strategy: increase
     groups:
       frontend: {patterns: ["*"], update-types: [minor, patch]}
+    ignore:
+      # Los tipos de Node siguen la versión mayor del runtime (node:22 en CI y en la imagen).
+      - {dependency-name: "@types/node", update-types: ["version-update:semver-major"]}
+      # TypeScript 7 es la reescritura nativa del compilador: se adopta a mano cuando vue-tsc
+      # la soporte, no por una PR automática.
+      - {dependency-name: typescript, update-types: ["version-update:semver-major"]}
 
+  # Dependabot solo cambia pyproject.toml, no los locks con hashes: sus PR son un aviso. Se
+  # aplican a mano regenerando los dos locks con uv (ver cabecera) y se cierran.
   - package-ecosystem: pip
     directory: /backend
     schedule: {interval: weekly, day: monday}
     commit-message: {prefix: "chore(deps)"}
     open-pull-requests-limit: 5
+    groups:
+      backend: {patterns: ["*"]}
 
   - package-ecosystem: docker
     directory: /deploy/egress-proxy

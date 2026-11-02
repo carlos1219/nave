@@ -24,7 +24,7 @@ dependencies = [
 [project.optional-dependencies]
 # Versiones exactas; el lockfile con hashes es requirements-dev.lock.
 dev = [
-    "hypothesis==6.170.13",
+    "hypothesis==6.170.14",
     "import-linter==2.15",
     "mypy==2.4.1",
     "pytest==9.2.0",

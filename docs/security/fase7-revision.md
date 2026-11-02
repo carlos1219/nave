@@ -15,7 +15,7 @@ Estado: *Corregido* (con test de regresión), *Abierto*, *Aceptado* (con justifi
 | F7-01 | C1 Trivy | Alto | `trivy-secret.yaml` de la plataforma solo tenía un comentario: Trivy 0.75 aborta con `secrets config decode error: EOF`, así que **ningún escaneo de Trivy podía terminar** (fallo cerrado: sin SCA, secretos ni IaC) | Corregido |
 | F7-02 | C1 Semgrep | Alto | Los ficheros mayores que `--max-target-bytes` (2 MB) se omiten **en silencio**: un `.py` de 2,4 MB con `eval(input())` da 0 resultados, sin notificación y con `executionSuccessful: true`. Quien controla el repo puede ocultar código al gate rellenando el fichero | Corregido (ADR 0024) |
 | F7-03 | C1 fetcher | Bajo | El límite de número de ficheros (`max-files`) se aplica tras el `checkout`, no durante él | Aceptado |
-| F7-04 | C1 contrato | Medio | `test_scanner_ignores_repo_config.py` solo cubre Semgrep y se omite si no hay Docker/imágenes; no hay prueba de aislamiento de configuración para Trivy, lo que dejó pasar F7-01 | Parcial: test estático añadido; falta contrato de Trivy en CI |
+| F7-04 | C1 contrato | Medio | `test_scanner_ignores_repo_config.py` solo cubre Semgrep y se omite si no hay Docker/imágenes; no hay prueba de aislamiento de configuración para Trivy, lo que dejó pasar F7-01 | Corregido (2026-10-31): contrato de aislamiento contra las imágenes reales de Semgrep y Trivy en CI |
 | F7-05 | C2 runner | **Bloqueante** | El workspace es un volumen `tmpfs` del driver `local`: se vacía al desmontarse, así que lo que clona el fetch **nunca llega** al contenedor de escaneo (Semgrep: «Invalid scanning root», `scanner_failed`). Ningún escaneo podía completarse; falla cerrado | Corregido (ADR 0025) |
 | F7-06 | C2 CI | Medio | CI solo ejecutaba `ruff check src` del runner: sus 278 tests (`runner/tests`), que el threat model cita como verificación de AM-501/502/505, no corrían, ni `mypy` | Corregido |
 | F7-07 | C2 runner | Bajo | No se distribuye perfil seccomp propio: `NAVE_RUNNER_SECCOMP_PROFILE` no se define en Compose y se aplica el perfil predeterminado del motor | Aceptado |
@@ -42,9 +42,10 @@ Estado: *Corregido* (con test de regresión), *Abierto*, *Aceptado* (con justifi
 | F7-32 | C12 escaneo real | **Bloqueante** | El worker pedía por defecto hasta 256 MiB de salida de escáner (`NAVE_SCANNER_MAX_OUTPUT_BYTES`) y el runner solo admite 64 MiB (`NAVE_RUNNER_MAX_OUTPUT_BYTES`): **toda petición de escaneo real se rechazaba con 400** y el runner ni siquiera lo registraba. Los tests usaban límites propios y no lo veían | Corregido: valor por defecto del worker en 64 MiB, test cruzado de valores por defecto, el runner registra cada rechazo (solo la regla incumplida) |
 | F7-33 | C12 escaneo real | **Alto** | El envoltorio de Trivy copiaba la base de datos de vulnerabilidades (1,5 GB) al tmpfs de 1 GiB del escaneo: `No space left on device` en todo escaneo de Trivy. Además el script `update_trivy_db.py` descargaba en un `/tmp` de 256 MB y fallaba igual | Corregido: la base de datos se enlaza en solo lectura (sin copia, ahorra 1,5 GB de RAM por escaneo) y la descarga usa el propio volumen como temporal; tests |
 | F7-34 | C13 CI / imágenes | **Bloqueante** | Las imágenes de Semgrep y Trivy construidas desde el repositorio dejaban `/usr/local/bin/nave-scan` sin permiso de ejecución (Git en Windows no guarda el bit +x y Docker Desktop lo añade al construir en local, por eso nunca se vio): todo escaneo de una imagen publicada habría fallado con «permission denied». Lo destapó el nuevo contrato de aislamiento en CI | Corregido: `COPY --chmod=0555` en ambos Dockerfiles, bit +x en Git y test; verificado construyendo desde un contexto con modo 0644 |
+| F7-35 | C14 producción | **Alto** | Bajo gVisor (`runsc`), el contenedor de clonado no resolvía `egress-proxy`: gVisor usa su propia pila de red y no alcanza el DNS interno de Docker. Con el runtime de producción ningún escaneo podía clonar (`FETCH_FAILED`); en desarrollo (runc) no se ve | Corregido: el runner llega al proxy por IP fija en la red `egress`; verificado con un escaneo real bajo gVisor |
 | F7-30 | C10 logs | Bajo | Huecos de la redacción: un JWT suelto y el valor de una cookie de sesión no se redactaban; el mensaje se recortaba a 2000 caracteres *antes* de redactar (el principio de un secreto cortado pasaba); un token `ghs_` pegado a una palabra no coincidía por el `\b` | Corregido: dos patrones nuevos, se redacta antes del recorte final y se quita el `\b`; tests de regresión |
 | F7-12 | C5 auth | Bajo | Cada `GET /auth/login` anónimo escribe un flujo en la base de datos (caduca a los 10 min) con tope de 10 000 vivos; el limitador es por proceso de gunicorn (efectivo ×4: 40 inicios en ráfaga por IP, medido). Con unas 13 IP sostenidas se llena la tabla y el login responde 503 a todos hasta que caducan; las sesiones ya abiertas no se ven afectadas | Aceptado (RR-28) |
-| F7-13 | C5 auth / despliegue | Medio | El login se limita por IP, pero con Docker Desktop (y, según el controlador de puertos, con motor rootless o un balanceador sin `real_ip`) todos los clientes llegan con la misma IP: comparten un único cubo de login. Verificado en dev: toda la actividad aparece como `172.19.0.1`. No estaba documentado como requisito de despliegue | Corregido en documentación (`despliegue.md` §6 punto 9); pendiente de verificar en producción |
+| F7-13 | C5 auth / despliegue | Medio | El login se limita por IP, pero con Docker Desktop (y, según el controlador de puertos, con motor rootless o un balanceador sin `real_ip`) todos los clientes llegan con la misma IP: comparten un único cubo de login. Verificado en dev: toda la actividad aparece como `172.19.0.1`. No estaba documentado como requisito de despliegue | Corregido: verificado en producción simulada con Docker rootless (`slirp4netns`), C14 |
 | F7-08 | C2 runner | Bajo | Servidor HTTP del runner con un hilo por conexión (tope 64, plazo de socket 10 s): un cliente lento podría ocupar las 64 conexiones. Solo es alcanzable desde la red `runner` (el worker) | Aceptado |
 
 ## C1 — Sandbox y fetcher (TB5, TB6)
@@ -564,4 +565,20 @@ lectura y sin ejecución desde forks.
 
 Aviso pendiente: `docker/setup-buildx-action` apunta a Node 20 (obsoleto); lo actualizará Dependabot.
 No verificado: el workflow `release` (cosign, SBOM, GHCR).
+
+## C14 — Producción simulada: Docker rootless + gVisor (2026-11-02)
+
+Host Linux simulado en WSL2 (Ubuntu 24.04, distribución propia `nave-prod`), Docker Engine 29.9.2
+rootless y gVisor `release-20261026.0`. Procedimiento completo en
+[`../runbooks/produccion-rootless-gvisor.md`](../runbooks/produccion-rootless-gvisor.md).
+
+| Comprobación | Resultado |
+|---|---|
+| Pila completa en rootless | Los 9 servicios sanos sin cambios de código; los secretos montados se leen con los usuarios de cada servicio (cierra §6 punto 4 de `despliegue.md`) |
+| Runner contra el motor rootless | Fallaba con `NAVE_ENGINE_SOCKET_GID=0`: en rootless el GID del socket visto desde el contenedor es otro (989). Documentado |
+| Escaneo real bajo gVisor | Primero `FETCH_FAILED` por DNS (F7-35); corregido: clonado, sostenedor y escaneo con `runsc`, `COMPLETED`, 23 hallazgos y veredicto **FAIL** (política por defecto, ADR 0032) |
+| IP real del cliente (RR-29) | Con el controlador de puertos `builtin` todos los clientes eran `172.20.0.1`; con `slirp4netns`, el cliente de Windows aparece con su IP real |
+
+Limitaciones: WSL2 no es un servidor real (kernel de Microsoft, red de la VM). Hay que repetir las
+comprobaciones del runbook en el host definitivo.
 

@@ -13,8 +13,8 @@ ha resistido la revisión. Lo que faltaba era que varias piezas funcionaran de v
 extremo a extremo: antes de esta fase **ningún escaneo podía terminar** y parte de la
 cadena de suministro no existía. Eso está corregido y probado.
 
-Quedan dos condiciones para el paso a producción (ver «Antes de producción»), ninguna
-de las cuales exige cambiar el diseño.
+Quedan dos pasos para el paso a producción (ver «Antes de producción»), ninguno
+de los cuales exige cambiar el diseño.
 
 ## Qué se revisó
 
@@ -28,19 +28,19 @@ siempre que fue posible, y cada corrección lleva un test de regresión.
 
 ## Resultados
 
-33 hallazgos (F7-01 a F7-33):
+35 hallazgos (F7-01 a F7-35):
 
 | Severidad | Nº | Corregidos | Parciales | Aceptados con justificación |
 |---|---|---|---|---|
-| Bloqueante | 2 | 2 | — | — |
-| Alto | 6 | 6 | — | — |
-| Medio | 11 | 8 | 2 | 1 |
-| Bajo | 14 | 4 | 1 | 9 |
-| **Total** | **33** | **20** | **3** | **10** |
+| Bloqueante | 3 | 3 | — | — |
+| Alto | 7 | 7 | — | — |
+| Medio | 11 | 10 | — | 1 |
+| Bajo | 14 | 5 | — | 9 |
+| **Total** | **35** | **25** | **0** | **10** |
 
-«Parciales»: F7-04 (falta el contrato de aislamiento de Trivy en CI), F7-13 (documentado;
-pendiente de comprobar en producción) y F7-18 (Redis endurecido, pero un solo usuario para
-todos los servicios).
+Los tres que estaban parciales ya están cerrados: F7-04 (contrato de aislamiento de Semgrep y
+Trivy en CI), F7-13 (IP real del cliente verificada con Docker rootless) y F7-18 (un usuario de
+Redis por servicio).
 
 ### Los hallazgos que importan
 
@@ -53,6 +53,8 @@ todos los servicios).
 | F7-24 (Alto) | La imagen de producción del proxy de salida no existía ni se publicaba | El control de salida a Internet no podía desplegarse |
 | F7-32 (Bloqueante) | El worker pedía más salida de escáner de la que admite el runner | Ningún escaneo real podía completarse; lo destapó la prueba con GitHub real |
 | F7-33 (Alto) | La base de datos de Trivy (1,5 GB) se copiaba a un tmpfs de 1 GiB | Trivy fallaba en todo escaneo real: sin análisis de dependencias ni secretos |
+| F7-34 (Bloqueante) | Las imágenes de escáner construidas desde el repositorio no podían ejecutar su envoltorio | Ninguna imagen publicada habría escaneado nada; invisible en Windows |
+| F7-35 (Alto) | Bajo gVisor el contenedor de clonado no resolvía el proxy de salida | Con el runtime de producción ningún escaneo clonaba el código |
 | F7-31 (Alto) | Un administrador de plataforma podía darse ADMIN en cualquier organización | El rol pensado solo para administrar la instalación daba acceso a todos los hallazgos y auditorías |
 | F7-14 (Medio) | Dos administradores podían retirarse mutuamente a la vez | Organización sin administrador en 4 de 5 intentos medidos |
 | F7-22, F7-25, F7-27 (Medio) | Lockfile del frontend sin hashes en 264 de 301 paquetes, CI que no construía nada con digests fijos, dependencias con CVE críticos | Cadena de suministro no verificable |
@@ -81,10 +83,17 @@ Ninguno es alto. Los más relevantes:
 
 ## Antes de producción
 
-1. **Despliegue en el host de producción con motor rootless y gVisor** (RR-20): en
-   desarrollo (Docker Desktop) el aislamiento de escaneos no es un límite de seguridad.
-2. **Comprobar la IP real del cliente** tras Nginx (RR-29) y programar la actualización de
-   la base de datos de Trivy (RR-15).
+Las condiciones técnicas están cubiertas en un entorno de producción simulado (WSL2 con Docker
+rootless y gVisor, runbook `docs/runbooks/produccion-rootless-gvisor.md`):
+
+- **Aislamiento real de los escaneos (RR-20):** un escaneo real se completa con todos sus
+  contenedores bajo gVisor. Para lograrlo hubo que corregir F7-35 (DNS bajo gVisor).
+- **IP real del cliente (RR-29):** resuelta con el controlador de puertos `slirp4netns`.
+
+Queda:
+
+1. **Repetir el runbook en el servidor definitivo** (WSL2 no es un servidor real).
+2. **Probar el workflow `release`** (firma con cosign, SBOM y publicación en GHCR).
 
 ## Estado de la verificación
 

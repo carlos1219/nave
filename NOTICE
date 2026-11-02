@@ -1,0 +1,16 @@
+NAVE — Nodo de Análisis y Verificación Estática
+Copyright 2026 Carlos León Arjona
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+The container images built from this repository include third-party software
+under its own license, which is not changed by this project:
+
+- Semgrep Community Edition — GNU LGPL v2.1
+- Trivy — Apache License 2.0
+- Smokescreen — MIT License
+- gVisor (runtime on the host, not distributed) — Apache License 2.0
+
+The Semgrep rules in deploy/scanner-sandbox/semgrep/rules are original to this
+project. Rules from the Semgrep Registry are not included: their license does
+not allow offering them as a service to third parties.

@@ -1,5 +1,9 @@
 # NAVE
 
+[![CI](https://github.com/carlos1219/nave/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/carlos1219/nave/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/carlos1219/nave/badge)](https://scorecard.dev/viewer/?uri=github.com/carlos1219/nave)
+[![Licencia: Apache-2.0](https://img.shields.io/badge/licencia-Apache--2.0-blue.svg)](LICENSE)
+
 **Nodo de Análisis y Verificación Estática.** Plataforma interna que escanea el código de los
 repositorios de GitHub en cada push y pull request con **Semgrep** (SAST) y **Trivy** (dependencias,
 secretos e IaC), aplica una política de quality gates y devuelve el resultado a GitHub como check y
@@ -123,7 +127,7 @@ Con Docker Desktop el sandbox **no** es una barrera de seguridad real.
 | [`docs/security/fase7-informe-ejecutivo.md`](docs/security/fase7-informe-ejecutivo.md) | Resumen de la revisión de seguridad |
 | [`docs/security/fase7-revision.md`](docs/security/fase7-revision.md) | Revisión detallada: vectores, pruebas y evidencias |
 | [`docs/threat-model.md`](docs/threat-model.md) | Modelo de amenazas STRIDE y riesgos residuales |
-| [`docs/adr/`](docs/adr/README.md) | 33 decisiones de arquitectura (ADR) |
+| [`docs/adr/`](docs/adr/README.md) | 34 decisiones de arquitectura (ADR) |
 | [`docs/architecture/`](docs/architecture/) | Puertos y contratos, modelo de datos, despliegue |
 | [`docs/runbooks/`](docs/runbooks/) | Procedimientos operativos |
 
@@ -145,8 +149,30 @@ Fases 0 a 7 completadas, incluida la revisión de seguridad final, con un escane
 GitHub y un despliegue de producción simulado (Docker rootless + gVisor). Antes de un despliegue
 real queda repetir el runbook en el servidor definitivo y probar el workflow de publicación.
 
-## Uso
+## Cómo se construyó
 
-Herramienta de **uso interno**. Las reglas del registro de Semgrep tienen una licencia que no
-permite ofrecerlas como servicio a terceros; ofrecer NAVE a terceros exigiría revisar antes las
-licencias de reglas y escáneres (modelo de amenazas, AM-905).
+NAVE se desarrolló con **Claude Code**, el asistente de programación de Anthropic, como herramienta
+de ingeniería y no como piloto automático. El método:
+
+- **Un contrato de ingeniería explícito.** [`CLAUDE.md`](CLAUDE.md) fija la arquitectura, las reglas
+  de seguridad que no se negocian (nunca `shell=True`, nunca el socket de Docker en el worker, nunca
+  configuración tomada del repositorio analizado...), el estilo y la definición de terminado. El
+  asistente trabaja dentro de esas reglas y avisa cuando una petición las contradice.
+- **Las decisiones son mías y están por escrito.** El asistente propone opciones con sus
+  compromisos; el alcance, las prioridades y qué riesgos se aceptan los decido yo. Quedan en
+  [34 ADR](docs/adr/README.md) y en el [modelo de amenazas](docs/threat-model.md).
+- **Nada se da por bueno sin pruebas.** Cada cambio llega con tests, la CI bloquea si algo falla y lo
+  importante se comprobó contra sistemas reales: GitHub, Docker rootless con gVisor y un navegador
+  para la CSP.
+- **Desconfianza también hacia el propio código.** La revisión de seguridad trató como superficie de
+  ataque todo lo ya escrito, incluido lo que había generado el asistente. Varios de los fallos más
+  graves (F7-05, F7-31, F7-34, F7-35) estaban en código que pasaba sus tests y solo aparecieron al
+  probar el sistema completo; las historias están en [`docs/presentacion.md`](docs/presentacion.md).
+
+Los commits hechos con el asistente lo indican con `Co-Authored-By`.
+
+## Licencia
+
+[Apache-2.0](LICENSE). Las licencias de los componentes de terceros que llevan las imágenes están
+en [`NOTICE`](NOTICE). El repositorio solo contiene reglas de Semgrep propias: las del registro de
+Semgrep no se distribuyen ([ADR 0034](docs/adr/0034-publicacion-del-codigo-apache-2.md)).

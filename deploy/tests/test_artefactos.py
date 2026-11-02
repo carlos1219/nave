@@ -151,7 +151,7 @@ def workflows(root):
 
 def test_workflows_fijados_y_sin_inyeccion(root):
     flows = workflows(root)
-    assert {n for n, _ in flows} == {"ci.yml", "release.yml"}
+    assert {n for n, _ in flows} == {"ci.yml", "release.yml", "scorecard.yml"}
     for name, flow in flows:
         triggers = flow.get("on") or flow.get(True)
         assert "pull_request_target" not in triggers, name

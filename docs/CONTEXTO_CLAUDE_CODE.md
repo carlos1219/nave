@@ -21,7 +21,7 @@ Plataforma SAST/SCA (escáner estático de código y de dependencias). Backend P
 | **Fase 7: revisión de seguridad final de todo el sistema** | **Pendiente** |
 
 ## 4. Estado del despliegue local (Windows + Docker Desktop, perfil `dev`)
-Repo en `C:\Users\Usuario\Desktop\NAVE`. Los 9 contenedores llegaron a estar arriba (postgres, redis, keycloak, api, worker, scheduler, scan-runner, egress-proxy, frontend). El login con Keycloak (`dev`/`dev`) funciona en https://localhost.
+Repo clonado en local. Los 9 contenedores llegaron a estar arriba (postgres, redis, keycloak, api, worker, scheduler, scan-runner, egress-proxy, frontend). El login con Keycloak (`dev`/`dev`) funciona en https://localhost.
 
 Scripts (PowerShell, desde la raíz):
 - `deploy/scripts/dev_up.ps1`: construye imágenes (`docker-compose.build.yml` + `deploy/images.dev.env`, etiquetas `nave-*:dev`), calcula el digest de las imágenes de escáner, migra y levanta. Se detiene en el primer fallo.

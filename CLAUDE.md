@@ -13,7 +13,7 @@
 
 - **Nombre:** **NAVE** — *Nodo de Análisis y Verificación Estática*. Siempre en mayúsculas en UI, documentación y logos de texto.
 - **Concepto:** un nodo central (API) que despacha workers asíncronos que analizan código no confiable. Apodo interno del servicio central: "Nave Nodriza".
-- **Ámbito:** herramienta de **uso interno exclusivo** de la empresa; no se ofrece a terceros. Si esto cambiase, revisar antes las licencias de reglas y escáneres (threat model AM-905).
+- **Ámbito:** herramienta para desplegar **dentro de una organización**; no se ofrece como servicio a terceros. El código es público bajo Apache-2.0 (ADR 0034): no se incluyen reglas del registro de Semgrep (threat model AM-905).
 - **Convenciones de nombres derivadas:**
 
 | Elemento | Nombre |
@@ -433,5 +433,6 @@ Resueltas en fase 0 (detalle en `docs/adr/`):
 | Autoasignación de roles | El administrador de plataforma no puede dar, cambiar ni quitar su propia pertenencia (403 auditado) | 0031 |
 | Política por defecto | Cada organización nueva nace con la versión 1 «ningún CRITICAL ni HIGH nuevo»; la reinstalación conserva la que tuviera | 0032 |
 | Usuarios de Redis | Uno por servicio (`nave-api`, `nave-scheduler`, `nave-worker`) con comandos, claves y canales mínimos; `default` desactivado; `health` solo `PING` | 0033 |
+| Publicación del código | Apache-2.0 con `NOTICE` de terceros; solo reglas de Semgrep propias en el repositorio | 0034 |
 
 Abiertas: ninguna. Las nuevas se añaden aquí y se resuelven con un ADR antes de implementar.

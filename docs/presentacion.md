@@ -11,7 +11,7 @@ la puerta de entrada.
 
 | | |
 |---|---|
-| Arquitectura | Hexagonal, 8 servicios en Docker Compose, 33 decisiones documentadas (ADR) |
+| Arquitectura | Hexagonal, 8 servicios en Docker Compose, 34 decisiones documentadas (ADR) |
 | Tests | ~2.900 entre backend, runner, fetcher, despliegue y frontend; cobertura del backend 97 % |
 | Seguridad | Modelo de amenazas STRIDE y revisión como atacante con 35 hallazgos corregidos o aceptados con justificación, cada corrección con su test |
 | Verificación real | Escaneo de un repositorio real de GitHub de extremo a extremo; despliegue de producción simulado con Docker rootless + gVisor; CI en GitHub Actions en verde |
@@ -37,6 +37,14 @@ la puerta de entrada.
 
 La lección común: **los tests unitarios no bastan**. Los fallos graves aparecieron al ejecutar las
 piezas juntas contra binarios, servicios y entornos reales.
+
+## Cómo trabajé con IA
+
+Si sale en la entrevista, la respuesta corta: usé Claude Code como asistente bajo un contrato de
+ingeniería (`CLAUDE.md`) con reglas de seguridad no negociables. Yo marqué el alcance, elegí entre
+las opciones que proponía y decidí qué riesgos aceptar (34 ADR). Nada se dio por bueno sin tests,
+CI y pruebas contra sistemas reales, y la revisión de seguridad trató como sospechoso también el
+código que había generado el asistente: ahí salieron F7-05, F7-31, F7-34 y F7-35.
 
 ## Guion de demo
 

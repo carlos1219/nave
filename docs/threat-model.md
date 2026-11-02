@@ -233,7 +233,7 @@ Riesgo residual: **A** alto, **M** medio, **B** bajo, tras aplicar la mitigació
 | AM-902 | T | BD de Trivy manipulada | Descarga solo desde un mirror controlado, verificando el digest del artefacto OCI; el escaneo nunca descarga | Test de configuración en fase 2 | B |
 | AM-903 | T | Regla Semgrep maliciosa o rota | Reglas versionadas y revisadas en el repo de NAVE; nunca del repo escaneado | Tests de reglas en CI | B |
 | AM-904 | T | Dependencia Python/npm comprometida | Lockfiles con hashes (`--require-hashes` / `npm ci`); actualización automatizada con revisión; SBOM CycloneDX; NAVE se escanea a sí misma | CI | M |
-| AM-905 | — | Riesgo legal: licencia de las reglas del registro de Semgrep | NAVE es de **uso interno exclusivo** (S-09), que es el uso que permite esa licencia. Si alguna vez se ofreciera a terceros, habría que revisarlo antes | Revisión al cambiar el ámbito | B |
+| AM-905 | — | Riesgo legal: licencia de las reglas del registro de Semgrep | El código es público bajo Apache-2.0 (ADR 0034) y solo contiene reglas propias; las del registro no se distribuyen. Quien despliegue NAVE las monta bajo su propia licencia | Revisar al añadir reglas o dependencias | B |
 
 ## 7. Supuestos
 
@@ -257,7 +257,7 @@ Riesgo residual: **A** alto, **M** medio, **B** bajo, tras aplicar la mitigació
 | RR-02 | Un escáner comprometido puede ocultar findings de su propio repo (AM-603) | B | Aceptado |
 | RR-03 | Replay de un webhook antiguo tras la retención (AM-202) | B | Aceptado |
 | RR-04 | Desarrollo sin gVisor ni rootless (S-07) | — | Aceptado solo para desarrollo |
-| RR-05 | Licencia de las reglas Semgrep (AM-905) | B | Cerrado: uso interno (S-09) |
+| RR-05 | Licencia de las reglas Semgrep (AM-905) | B | Cerrado: solo reglas propias en el repositorio público (ADR 0034) |
 | RR-06 | Fingerprint de secretos sin clave (AM-805) | M | Cerrado (fase 2): fingerprint con HMAC y clave del worker |
 | RR-07 | Entrega al menos una vez: una reentrega puede ejecutar dos veces el mismo paso (ADR 0010) | B | Aceptado: casos de uso idempotentes; `visibility_timeout` calculado; coste solo de CPU |
 | RR-08 | Sin equidad por organización: una organización puede llenar la cola `scan` (AM-307) | B | Aceptado (herramienta interna); se reabre si crece el número de organizaciones |

@@ -36,5 +36,6 @@
 | 0031 | [El administrador de plataforma no cambia su propia pertenencia](0031-administrador-de-plataforma-sin-autoasignacion.md) | Aceptado |
 | 0032 | [Política de quality gates por defecto para organizaciones nuevas](0032-politica-de-quality-gates-por-defecto.md) | Aceptado |
 | 0033 | [Un usuario de Redis por servicio](0033-usuarios-de-redis-por-servicio.md) | Aceptado |
+| 0034 | [Publicación del código fuente bajo Apache-2.0](0034-publicacion-del-codigo-apache-2.md) | Aceptado |
 
 Este índice se mantiene al día. Los ADRs aceptados no se editan: se sustituyen por otros nuevos.

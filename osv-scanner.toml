@@ -1,0 +1,13 @@
+# Vulnerabilidades aceptadas, cada una con motivo y caducidad (lo lee OSV-Scanner, también desde
+# OpenSSF Scorecard). Al caducar vuelven a contar: hay que actualizar la dependencia o renovar
+# la justificación.
+
+[[IgnoredVulns]]
+id = "GHSA-3g3m-2fjr-6pw4"
+ignoreUntil = 2027-01-31T00:00:00Z
+reason = "glob 13 solo como dependencia de desarrollo (js-beautify vía @vue/test-utils); no llega a la imagen. La corrección es glob 14, que js-beautify aún no acepta."
+
+[[IgnoredVulns]]
+id = "GHSA-g3hv-75wg-m249"
+ignoreUntil = 2027-01-31T00:00:00Z
+reason = "minimatch 5 y 10 solo en herramientas de desarrollo (ESLint, Redocly, editorconfig) con patrones de la propia configuración, no de entrada externa. La corrección es minimatch 11, que esas herramientas aún no aceptan."

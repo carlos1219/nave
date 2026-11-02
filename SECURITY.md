@@ -6,7 +6,8 @@ autenticación o autorización se trata con prioridad.
 ## Cómo informar de una vulnerabilidad
 
 Usa el **reporte privado de vulnerabilidades** de GitHub: pestaña *Security* → *Report a
-vulnerability*. No abras un issue público.
+vulnerability*, o directamente <https://github.com/carlos1219/nave/security/advisories/new>.
+No abras un issue público.
 
 Incluye, si puedes:
 

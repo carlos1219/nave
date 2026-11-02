@@ -38,7 +38,7 @@ que no es de fiar**, así que el propio escáner es superficie de ataque.
   [release](https://github.com/carlos1219/nave/releases) publica las imágenes en GHCR firmadas con
   cosign sin clave, con su SBOM CycloneDX como atestación y la lista de digests firmada.
 - **Revisión de seguridad documentada.** Una revisión como atacante, componente a componente,
-  encontró **35 problemas** (3 de ellos bloqueantes), todos corregidos o aceptados con justificación,
+  encontró **36 problemas** (3 de ellos bloqueantes), todos corregidos o aceptados con justificación,
   y cada corrección lleva su test de regresión. Varios solo aparecieron al probar contra GitHub real
   y contra el entorno de producción (Docker rootless + gVisor): ver el
   [informe ejecutivo](docs/security/fase7-informe-ejecutivo.md).

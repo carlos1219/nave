@@ -28,15 +28,18 @@ siempre que fue posible, y cada corrección lleva un test de regresión.
 
 ## Resultados
 
-35 hallazgos (F7-01 a F7-35):
+36 hallazgos (F7-01 a F7-36):
 
 | Severidad | Nº | Corregidos | Parciales | Aceptados con justificación |
 |---|---|---|---|---|
 | Bloqueante | 3 | 3 | — | — |
 | Alto | 7 | 7 | — | — |
 | Medio | 11 | 10 | — | 1 |
-| Bajo | 14 | 5 | — | 9 |
-| **Total** | **35** | **25** | **0** | **10** |
+| Bajo | 15 | 6 | — | 9 |
+| **Total** | **36** | **26** | **0** | **10** |
+
+F7-36 llegó después de publicar el repositorio: CodeQL, en su primera ejecución, señaló una
+expresión regular que solo se libraba de un ReDoS por cómo se llamaba. Se acotó igualmente.
 
 Los tres que estaban parciales ya están cerrados: F7-04 (contrato de aislamiento de Semgrep y
 Trivy en CI), F7-13 (IP real del cliente verificada con Docker rootless) y F7-18 (un usuario de
@@ -93,7 +96,9 @@ rootless y gVisor, runbook `docs/runbooks/produccion-rootless-gvisor.md`):
 Queda:
 
 1. **Repetir el runbook en el servidor definitivo** (WSL2 no es un servidor real).
-2. **Probar el workflow `release`** (firma con cosign, SBOM y publicación en GHCR).
+
+El workflow `release` ya está probado: la versión `v1.0.0` publicó las 7 imágenes en GHCR con
+firma cosign y SBOM, verificadas después con cosign.
 
 ## Estado de la verificación
 

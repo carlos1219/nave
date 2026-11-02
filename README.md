@@ -42,7 +42,7 @@ que no es de fiar**, así que el propio escáner es superficie de ataque.
 ## Arquitectura
 
 ```mermaid
-flowchart LR
+flowchart TB
   GH[GitHub] -- webhook firmado --> FE[frontend<br/>Nginx]
   U[Usuario] -- OIDC --> FE
   FE --> API[api<br/>Flask]

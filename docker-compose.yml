@@ -249,7 +249,9 @@ services:
       NAVE_RUNNER_IMAGE_TRIVY: ${NAVE_TRIVY_IMAGE:?imagen con digest en deploy/images.env}
       NAVE_RUNNER_VERSION_TRIVY: ${NAVE_TRIVY_VERSION:?}
       NAVE_RUNNER_FETCH_IMAGE: ${NAVE_FETCHER_IMAGE:?imagen con digest en deploy/images.env}
-      NAVE_RUNNER_EGRESS_PROXY_URL: http://egress-proxy:4750
+      # Por IP, no por nombre: bajo gVisor (runsc) el DNS interno de Docker no responde dentro
+      # del contenedor de clonado (pila de red propia de gVisor). Comprobado en la fase 7 (F7-35).
+      NAVE_RUNNER_EGRESS_PROXY_URL: http://${NAVE_EGRESS_PROXY_IP:-172.31.250.10}:4750
       NAVE_RUNNER_EGRESS_NETWORK: nave-egress
       NAVE_RUNNER_TRIVY_DB_VOLUME: nave-trivy-db
       NAVE_RUNNER_RUNTIME: ${NAVE_RUNNER_RUNTIME:-}
@@ -275,7 +277,9 @@ services:
       - --listen-ip=0.0.0.0
       - --listen-port=4750
       - --config-file=/etc/smokescreen/config.yaml
-    networks: [egress, public]
+    networks:
+      egress: {ipv4_address: "${NAVE_EGRESS_PROXY_IP:-172.31.250.10}"}
+      public: {}
     volumes:
       - ./deploy/egress-proxy/config.yaml:/etc/smokescreen/config.yaml:ro
       - ./deploy/egress-proxy/acl.yaml:/etc/smokescreen/acl.yaml:ro
@@ -360,6 +364,9 @@ networks:
   egress:
     name: nave-egress
     internal: true
+    ipam:
+      config:
+        - subnet: ${NAVE_EGRESS_SUBNET:-172.31.250.0/24}
 
 volumes:
   pgdata: {}

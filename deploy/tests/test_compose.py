@@ -286,3 +286,11 @@ def test_cada_servicio_usa_su_usuario_de_redis(services):
         assert env["NAVE_REDIS_URL"] == f"redis://nave-{name}@redis:6379/0"
         assert env["NAVE_REDIS_PASSWORD_FILE"] == f"/run/secrets/redis_{name}_password"
 
+
+def test_el_clonado_llega_al_proxy_por_ip(compose, services):
+    # F7-35: bajo gVisor el DNS interno de Docker no responde en el contenedor de clonado.
+    url = services["scan-runner"]["environment"]["NAVE_RUNNER_EGRESS_PROXY_URL"]
+    ip = services["egress-proxy"]["networks"]["egress"]["ipv4_address"]
+    assert url == f"http://{ip}:4750"
+    assert compose["networks"]["egress"]["ipam"]["config"][0]["subnet"]
+

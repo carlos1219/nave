@@ -34,9 +34,9 @@ que no es de fiar**, así que el propio escáner es superficie de ataque.
   infraestructura; import-linter lo exige en CI. Añadir un escáner es un adaptador nuevo, sin tocar
   el núcleo.
 - **Cadena de suministro verificable.** Imágenes fijadas por digest, dependencias con hashes,
-  acciones de CI fijadas por SHA y la plataforma se escanea a sí misma en cada cambio. El
-  workflow de publicación está preparado para generar SBOM CycloneDX y firmar con cosign (aún no
-  se ha ejecutado).
+  acciones de CI fijadas por SHA y la plataforma se escanea a sí misma en cada cambio. Cada
+  [release](https://github.com/carlos1219/nave/releases) publica las imágenes en GHCR firmadas con
+  cosign sin clave, con su SBOM CycloneDX como atestación y la lista de digests firmada.
 - **Revisión de seguridad documentada.** Una revisión como atacante, componente a componente,
   encontró **35 problemas** (3 de ellos bloqueantes), todos corregidos o aceptados con justificación,
   y cada corrección lleva su test de regresión. Varios solo aparecieron al probar contra GitHub real
@@ -116,7 +116,13 @@ Con Docker Desktop el sandbox **no** es una barrera de seguridad real.
 
 **Producción (Linux con Docker rootless y gVisor):** sigue el
 [runbook de producción](docs/runbooks/produccion-rootless-gvisor.md) y la guía de
-[despliegue](docs/architecture/despliegue.md).
+[despliegue](docs/architecture/despliegue.md). Las imágenes firmadas de cada versión y sus digests
+(`nave-images.env`) están en la página de la [release](https://github.com/carlos1219/nave/releases).
+Para verificar una imagen (cosign 3 o posterior):
+
+```bash
+cosign verify --certificate-identity-regexp '^https://github.com/carlos1219/nave/\.github/workflows/release\.yml@refs/tags/v' --certificate-oidc-issuer https://token.actions.githubusercontent.com ghcr.io/carlos1219/nave-backend@sha256:f613bffd7724a5e72444ca31ddb1b29ecde88bce127dbb0ca093b75180c67755
+```
 
 ## Documentación
 
@@ -146,8 +152,9 @@ Con Docker Desktop el sandbox **no** es una barrera de seguridad real.
 ## Estado
 
 Fases 0 a 7 completadas, incluida la revisión de seguridad final, con un escaneo real contra
-GitHub y un despliegue de producción simulado (Docker rootless + gVisor). Antes de un despliegue
-real queda repetir el runbook en el servidor definitivo y probar el workflow de publicación.
+GitHub y un despliegue de producción simulado (Docker rootless + gVisor). La versión `v1.0.0` está
+publicada con imágenes firmadas y SBOM. Antes de un despliegue real queda repetir el runbook en el
+servidor definitivo.
 
 ## Cómo se construyó
 

@@ -141,7 +141,7 @@ jobs:
             echo
             echo "Copia \`nave-images.env\` en \`deploy/images.env\` para desplegar exactamente estos digests."
             echo
-            echo "Verificar una imagen:"
+            echo "Verificar una imagen (cosign 3 o posterior):"
             echo
             echo '```'
             echo "cosign verify --certificate-identity-regexp '^https://github.com/${GITHUB_REPOSITORY}/.github/workflows/release.yml@refs/tags/v' --certificate-oidc-issuer https://token.actions.githubusercontent.com <imagen>@sha256:..."

@@ -15,6 +15,7 @@ la puerta de entrada.
 | Tests | ~2.900 entre backend, runner, fetcher, despliegue y frontend; cobertura del backend 97 % |
 | Seguridad | Modelo de amenazas STRIDE y revisión como atacante con 35 hallazgos corregidos o aceptados con justificación, cada corrección con su test |
 | Verificación real | Escaneo de un repositorio real de GitHub de extremo a extremo; despliegue de producción simulado con Docker rootless + gVisor; CI en GitHub Actions en verde |
+| Cadena de suministro | Release `v1.0.0` con 7 imágenes firmadas con cosign sin clave, SBOM CycloneDX como atestación y OpenSSF Scorecard publicado |
 
 ## Cinco historias que vale la pena contar
 
@@ -56,6 +57,5 @@ código que había generado el asistente: ahí salieron F7-05, F7-31, F7-34 y F7
 
 ## Siguientes pasos
 
-- Repetir el runbook de producción en el servidor definitivo y probar el workflow de publicación
-  (SBOM y firma).
+- Repetir el runbook de producción en el servidor definitivo con las imágenes firmadas de `v1.0.0`.
 - Añadir un tercer escáner (Gitleaks) para demostrar que no hace falta tocar el núcleo.

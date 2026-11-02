@@ -136,6 +136,9 @@ Prográmalo cada 12 h (cron o temporizador de systemd) y la primera vez antes de
 
 ### Verificar la firma antes de desplegar
 
+Con cosign 3 o posterior: el workflow firma con cosign 3, que guarda la firma como bundle de
+Sigstore referenciado por OCI, y cosign 2 responde «no signatures found».
+
 ```
 cosign verify \
   --certificate-identity-regexp '^https://github.com/<PROPIETARIO>/<REPO>/\.github/workflows/release\.yml@refs/tags/v' \

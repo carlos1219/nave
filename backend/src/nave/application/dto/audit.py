@@ -11,7 +11,9 @@ from nave.domain.validation import fullmatch_str, is_str_with_length
 from nave.domain.value_objects.identifiers import OrganizationId, UserId
 from nave.domain.value_objects.text import is_safe_text
 
-_ACTION: Final = re.compile(r"[a-z]+(?:[._][a-z]+){1,3}", re.ASCII)
+# Segmentos acotados: con `+` el patrón es cuadrático si alguien lo usa con `search` (CodeQL
+# py/polynomial-redos); con `fullmatch` ya era lineal, pero así no depende de cómo se llame.
+_ACTION: Final = re.compile(r"[a-z]{1,32}(?:[._][a-z]{1,32}){1,3}", re.ASCII)
 _TARGET_TYPE: Final = re.compile(r"[a-z_]{1,32}", re.ASCII)
 _MAX_DETAIL: Final = 512
 _MAX_DETAILS: Final = 16

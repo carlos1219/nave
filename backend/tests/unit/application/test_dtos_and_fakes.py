@@ -128,6 +128,14 @@ def test_permanent_error_carries_reason_code() -> None:
         ),
         lambda: AuditEntry(
             occurred_at=NOW,
+            action="scan." + "a" * 33,
+            actor=None,
+            organization_id=None,
+            target_type="scan",
+            target_id="1",
+        ),
+        lambda: AuditEntry(
+            occurred_at=NOW,
             action="scan.started",
             actor=None,
             organization_id=None,
